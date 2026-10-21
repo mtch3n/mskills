@@ -1,0 +1,16 @@
+{
+  "name": "mstack",
+  "owner": {
+    "name": "MTChen",
+    "url": "https://github.com/mtch3n"
+  },
+  "description": "MTChen's personal agent skills.",
+  "plugins": [
+    {
+      "name": "mstack",
+      "source": "./",
+      "description": "Worktrees in .claude/worktrees with a guard hook, and no code comments.",
+      "version": "0.1.0"
+    }
+  ]
+}

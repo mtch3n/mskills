@@ -1,0 +1,14 @@
+{
+  "name": "mstack",
+  "displayName": "mstack",
+  "version": "0.1.0",
+  "description": "MTChen's personal agent skills: worktrees in .claude/worktrees with a guard hook, and no code comments.",
+  "author": {
+    "name": "MTChen",
+    "url": "https://github.com/mtch3n"
+  },
+  "homepage": "https://github.com/mtch3n/mstack",
+  "repository": "https://github.com/mtch3n/mstack",
+  "license": "MIT",
+  "keywords": ["mstack", "skills", "git-worktree", "hooks", "no-comments"]
+}
