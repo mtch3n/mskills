@@ -37,10 +37,10 @@ git -C /home/u/proj worktree list
 
 ## The guard
 
-mstack ships a `PreToolUse` hook that denies `git worktree add` and `git worktree move`
+mskills ships a `PreToolUse` hook that denies `git worktree add` and `git worktree move`
 when the target isn't `<main-repo>/.claude/worktrees/<name>`. If it denies a command,
 rerun it with the path the denial message names. Don't route around it with another
-tool or a script. Details: `docs/worktree-guard.md` in the mstack repo.
+tool or a script. Details: `docs/worktree-guard.md` in the mskills repo.
 
 ## `.claude/worktrees/` must be git-ignored
 

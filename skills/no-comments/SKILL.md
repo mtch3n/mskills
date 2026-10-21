@@ -61,3 +61,9 @@ extract until the code reads without it, and move any *why* to the docs.
 
 If the project already has a comment checker or a lint rule for this, run that
 instead and leave the grep.
+
+## Sweeping a change
+
+For a whole diff or a set of files, use the `comment-reviewer` agent
+(`mskills:comment-reviewer` in Claude Code) and give it the scope. It removes the
+comments and writes their reasons into the docs; you make the renames it suggests.
