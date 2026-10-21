@@ -9,13 +9,15 @@ plugin that ships them with a hook.
 | Skill | What it does |
 |---|---|
 | [`worktrees`](skills/worktrees/SKILL.md) | Git worktrees live at `<main-repo>/.claude/worktrees/<name>`. How to create, move and remove them, and how to git-ignore `.claude/worktrees/`. |
+| [`recall`](skills/recall/SKILL.md) | Finds every past session about one task, pulls that task out, fact-checks it against the real files, git and tools, and writes a focused brief plus a handoff prompt for a fresh session. Run it with `/mskills:recall <task>`. |
 | [`no-comments`](skills/no-comments/SKILL.md) | The code has no comments. Names carry the *what*, the docs carry the *why*; only tool directives are allowed. |
 
-## Agent
+## Agents
 
-[`comment-reviewer`](agents/comment-reviewer.md) applies `no-comments` to a diff or
-files: removes the comments, writes their reasons into the docs, and suggests the
-renames that make the code read without them.
+| Agent | Model | What it does |
+|---|---|---|
+| [`comment-reviewer`](agents/comment-reviewer.md) | inherits | Applies `no-comments` to a diff or files: removes the comments, writes their reasons into the docs, suggests renames. |
+| [`session-reader`](agents/session-reader.md) | Sonnet | Reads past sessions for `recall` and returns one task's claims, marked as said by the user or the agent. |
 
 ## Hook
 
@@ -34,7 +36,7 @@ claude plugin install mskills@mskills
 ```
 
 Then run `/reload-plugins` in an open session, or start a new one. Skills appear as
-`/mskills:worktrees` and `/mskills:no-comments`; the hook runs on every Bash call.
+`/mskills:worktrees`, `/mskills:no-comments` and `/mskills:recall`; the hook runs on every Bash call.
 
 Other agents (skills only, no hook):
 
