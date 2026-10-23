@@ -1,0 +1,21 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Settings</title>
+<link rel="stylesheet" href="tokens.css">
+<style>
+.tiny { width: 16px; height: 16px; margin: 0 var(--space-2) 0 0; }
+.toggle { display: inline-flex; align-items: center; padding: var(--space-1) 0; }
+.savebar { position: sticky; bottom: 0; padding: var(--space-3) 0; border-top: 1px solid var(--line); background: white; }
+.save { width: 120px; white-space: nowrap; overflow: hidden; }
+</style>
+<script src="common.js"></script></head>
+<body><header><a href="index.html">Shop</a><a href="settings.html">Settings</a><a href="checkout.html">Checkout</a><a href="billing.html">Billing</a><a href="account.html">Account</a></header>
+<main>
+<h1>Settings</h1>
+<section><h2>Notifications</h2>
+<label class="toggle"><input type="checkbox" class="tiny"> Order updates</label><br>
+<label class="toggle"><input type="checkbox" class="tiny"> Newsletter</label>
+</section>
+<div class="savebar"><button class="btn save" data-t="save"></button></div>
+</main>
+<script>localize(); consent();</script>
+</body></html>

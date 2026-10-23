@@ -1,0 +1,11 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Sign in</title>
+<link rel="stylesheet" href="tokens.css">
+<script src="common.js"></script></head>
+<body><header><a href="index.html">Shop</a><a href="settings.html">Settings</a><a href="checkout.html">Checkout</a><a href="billing.html">Billing</a><a href="account.html">Account</a></header>
+<main>
+<h1>Sign in</h1><div class="field"><label for="name">Name</label><input id="name"></div><button class="btn" id="go">Sign in</button>
+<script>document.getElementById("go").onclick = () => { document.cookie = "session=" + (document.getElementById("name").value || "guest") + "; path=/"; const next = new URLSearchParams(location.search).get("next") || "/index.html"; location.href = next; };</script>
+</main>
+<script>localize(); consent();</script>
+</body></html>

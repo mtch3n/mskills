@@ -1,0 +1,9 @@
+{
+  "tier": "L",
+  "set": "dev",
+  "runs": 2,
+  "fixture": "fixtures/shop",
+  "max_turns": 250,
+  "timeout": 5400,
+  "prompt": "Before the release, do a full UI audit of every page of the shop at every supported screen size, as a user would use it. Fix what you find. Then give me a report of what you checked, what you fixed and what is left."
+}

@@ -1,0 +1,8 @@
+{
+  "tier": "S",
+  "set": "dev",
+  "runs": 3,
+  "max_turns": 15,
+  "timeout": 600,
+  "prompt": "docs/deploy-notes.md is hard to follow for our new on-call engineers, several of whom are not native English speakers. Rewrite it in place so they can act on it correctly. Keep every fact."
+}

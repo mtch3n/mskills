@@ -1,0 +1,8 @@
+{
+  "tier": "S",
+  "set": "holdout",
+  "runs": 3,
+  "max_turns": 15,
+  "timeout": 600,
+  "prompt": "Partners keep misreading docs/rate-limits.md, and many of them read English as a second language. Rewrite it in place so they understand exactly what to do. Keep every fact."
+}

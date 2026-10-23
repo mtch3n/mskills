@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Checkout</title>
+<link rel="stylesheet" href="tokens.css">
+<style>
+#pay .field { margin-bottom: 24px; }
+</style>
+<script src="common.js"></script></head>
+<body><header><a href="index.html">Shop</a><a href="settings.html">Settings</a><a href="checkout.html">Checkout</a><a href="billing.html">Billing</a><a href="account.html">Account</a></header>
+<main>
+<script>requireSession();</script><h1>Checkout</h1>
+<form id="pay" novalidate>
+<div class="field"><label for="card">Card number</label><input id="card" class="wide" inputmode="numeric"><span class="error" id="card-error" hidden></span></div>
+<div class="field"><label for="exp">Expiry</label><input id="exp" placeholder="MM/YY"></div>
+<button class="btn" data-t="pay"></button>
+</form>
+<script>
+document.getElementById("card").style.width = FORM.cardDigits * FORM.charWidth + "px";
+document.getElementById("pay").onsubmit = (event) => {
+  event.preventDefault();
+  const card = document.getElementById("card");
+  const error = document.getElementById("card-error");
+  if (card.value.replace(/\s/g, "").length < 12) {
+    card.setAttribute("aria-invalid", "true");
+    error.textContent = t("cardError");
+  } else {
+    error.hidden = true;
+    document.querySelector("main").innerHTML = "<p>Paid. Thank you.</p>";
+  }
+};
+</script>
+</main>
+<script>localize(); consent();</script>
+</body></html>

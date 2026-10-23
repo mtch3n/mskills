@@ -1,0 +1,8 @@
+{
+  "tier": "M",
+  "set": "holdout",
+  "runs": 2,
+  "max_turns": 80,
+  "timeout": 2400,
+  "prompt": "We added the --delimiter and --percent options to csvstat (see CHANGES.md). Check the change before we ship it, and fix the real problems you find. Tell me what you checked, what you fixed and what is left."
+}
