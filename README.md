@@ -12,6 +12,7 @@ plugin that ships them with a hook.
 | [`recall`](skills/recall/SKILL.md) | Finds every past session about one task, pulls that task out, fact-checks it against the real files, git and tools, and writes a focused brief plus a handoff prompt for a fresh session. Run it with `/mskills:recall <task>`. |
 | [`no-comments`](skills/no-comments/SKILL.md) | The code has no comments. Names carry the *what*, the docs carry the *why*; only tool directives are allowed. |
 | [`ship-check`](skills/ship-check/SKILL.md) | How to check a change before it ships: what has to be true, layers from static checks to a real look, trustworthy before-and-after evidence, and a report of what was checked, fixed, left and never tried. |
+| [`ste100`](skills/ste100/SKILL.md) | Writes English in ASD-STE100 Simplified Technical English and rewrites dense or ambiguous English into it, with a checker for the measurable rules. |
 | [`cost-aware`](skills/cost-aware/SKILL.md) | How an agent keeps token cost down: big things stay out of the main context, fewer turns, less work, and the right worker for each job. |
 
 ## Agents
@@ -38,8 +39,8 @@ claude plugin install mskills@mskills
 ```
 
 Then run `/reload-plugins` in an open session, or start a new one. Skills appear as
-`/mskills:worktrees`, `/mskills:no-comments`, `/mskills:recall`, `/mskills:ship-check` and
-`/mskills:cost-aware`; the hook runs on every Bash call.
+`/mskills:worktrees`, `/mskills:no-comments`, `/mskills:recall`, `/mskills:ship-check`,
+`/mskills:cost-aware` and `/mskills:ste100`; the hook runs on every Bash call.
 
 Other agents (skills only, no hook):
 
