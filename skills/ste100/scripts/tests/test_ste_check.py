@@ -67,18 +67,67 @@ class ScopeTest(unittest.TestCase):
         self.assertEqual(rules('Replace "set up the server" with one verb.'), [])
 
 
+class VerbTest(unittest.TestCase):
+    def test_progressive(self):
+        self.assertEqual(rules("The script is checking the file."), ["tense"])
+
+    def test_perfect(self):
+        self.assertEqual(rules("The worker has completed the task."), ["tense"])
+
+    def test_have_as_main_verb(self):
+        self.assertEqual(rules("The workers have two tasks."), [])
+
+    def test_modal(self):
+        self.assertEqual(rules("You should restart the server."), ["modal"])
+
+    def test_contraction(self):
+        self.assertEqual(rules("It's open and you can't close it."), ["contraction", "contraction"])
+
+    def test_possessive_is_not_contraction(self):
+        self.assertEqual(rules("Read the user's notes."), [])
+
+    def test_passive_in_step_is_error(self):
+        found = ste_check.check("1. The valve is opened.")
+        self.assertEqual([(item["rule"], item["level"]) for item in found], [("passive", "error")])
+
+
+class CountTest(unittest.TestCase):
+    def test_parentheses_count_as_one(self):
+        sentence = " ".join(["word"] * 24) + " (" + " ".join(["extra"] * 10) + ")."
+        self.assertEqual(rules(sentence), [])
+
+    def test_quote_counts_as_one(self):
+        sentence = " ".join(["word"] * 24) + ' "' + " ".join(["said"] * 10) + '".'
+        self.assertEqual(rules(sentence), [])
+
+    def test_number_with_unit_counts_as_one(self):
+        sentence = " ".join(["word"] * 24) + " 20 kg."
+        self.assertEqual(rules(sentence), [])
+
+    def test_procedure_flag(self):
+        sentence = " ".join(["word"] * 21) + "."
+        self.assertEqual([i["rule"] for i in ste_check.check(sentence, procedure=True)], ["length"])
+
+
 class WordTest(unittest.TestCase):
     def test_phrasal_verb(self):
         self.assertEqual(rules("Set up the server."), ["phrasal-verb"])
 
     def test_ing_verb(self):
-        self.assertEqual(rules("The script is checking the file."), ["ing-form"])
+        self.assertEqual(rules("Checking the file takes time."), ["ing-form"])
+
+    def test_approved_ing(self):
+        self.assertEqual(rules("The opening is missing."), [])
+
+    def test_terms_exempt(self):
+        found = ste_check.check("Open the Logging panel.", terms=["Logging panel"])
+        self.assertEqual(found, [])
 
     def test_ing_exceptions(self):
         self.assertEqual(rules("Nothing happens during the test."), [])
 
-    def test_ing_nouns(self):
-        self.assertEqual(rules("Read the warning and the setting."), [])
+    def test_heading_is_skipped(self):
+        self.assertEqual(rules("## Running the tests"), [])
 
     def test_passive(self):
         self.assertEqual(rules("The file was deleted."), ["passive"])
