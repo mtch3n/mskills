@@ -30,7 +30,7 @@ COPY_CONTEXT = (
 )
 
 
-NOT_USER = re.compile(r"<agent-message\b|<task-notification>|\[Subagent hand-back\]|^Another Claude session sent a message|^The \w+ plugin sent a message|<ostia-bus-messages>")
+NOT_USER = re.compile(r"<agent-message\b|<task-notification>|\[Subagent hand-back\]|^Another Claude session sent a message|^The \w+ plugin sent a message")
 
 
 def main():

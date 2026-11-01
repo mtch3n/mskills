@@ -9,7 +9,7 @@ import tempfile
 
 OPEN = re.compile(r"\b(?:polish|clean ?up|tidy|ship|launch|release|review|audit|ai[- ]?slop|slop|looks? (?:off|bad|wrong|cheap|generic|ugly|weird)|make it (?:look|feel)|improve the (?:ui|design|look|page|screen)|qa)\b", re.I)
 UI = re.compile(r"\b(?:page|screen|ui|ux|design|layout|view|dashboard|site|website|form|table|modal|dialog|component)s?\b", re.I)
-NOT_USER = re.compile(r"<agent-message\b|<task-notification>|\[Subagent hand-back\]|^Another Claude session sent a message|^The \w+ plugin sent a message|<ostia-bus-messages>")
+NOT_USER = re.compile(r"<agent-message\b|<task-notification>|\[Subagent hand-back\]|^Another Claude session sent a message|^The \w+ plugin sent a message")
 LIMIT = 4
 
 spec = importlib.util.spec_from_file_location("ui_measure", pathlib.Path(__file__).with_name("ui_measure.py"))
