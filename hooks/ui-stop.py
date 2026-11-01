@@ -74,7 +74,8 @@ def changed_files(transcript, cwd):
             files.update(touched(use, cwd))
     if start is None:
         return []
-    return sorted(str(p) for p in files if p.is_file() and p.stat().st_mtime >= start and not FIXTURE.search(p.as_posix()))
+    root = ui.root_of(cwd).resolve()
+    return sorted(str(p) for p in files if p.is_file() and p.resolve().is_relative_to(root) and p.stat().st_mtime >= start and not FIXTURE.search(p.as_posix()))
 
 
 def measured_after_edit(transcript, cwd):

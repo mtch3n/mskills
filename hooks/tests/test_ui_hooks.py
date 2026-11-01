@@ -91,6 +91,11 @@ class StopHookTest(unittest.TestCase):
         out = self.stop(tool("Edit", file_path=str(other / "app.css")))
         self.assertNotIn("index.html", (out or {}).get("reason", ""))
 
+    def test_skips_files_outside_the_project(self):
+        outside = pathlib.Path(tempfile.mkdtemp()) / "app.css"
+        outside.write_text(".card { border-left: 4px solid red; }\n")
+        self.assertIsNone(self.stop(tool("Edit", file_path=str(outside))))
+
     def test_skips_test_fixtures(self):
         fixture = self.dir / "tests" / "pages" / "defects.css"
         fixture.parent.mkdir(parents=True)
