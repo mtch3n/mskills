@@ -80,6 +80,68 @@ class SlopLintTest(unittest.TestCase):
         result, found = run(self.dir, "Clean.tsx")
         self.assertEqual((result.returncode, found), (0, {}))
 
+    def test_shadcn_project_flags_native_elements(self):
+        (self.dir / "components.json").write_text("{}")
+        ui = self.dir / "components" / "ui"
+        ui.mkdir(parents=True)
+        (ui / "button.tsx").write_text("<button className={cn()} />\n")
+        (self.dir / "Form.tsx").write_text(
+            '<Button>Save</Button>\n'
+            '<button onClick={go}>Go</button>\n'
+            '<input type="checkbox" checked />\n'
+            '<input type="hidden" name="id" />\n'
+            '<select><option>A</option></select>\n'
+            'if (confirm("Delete?")) remove()\n'
+            '<Input placeholder="Name" />\n'
+        )
+        result, found = run(self.dir, "Form.tsx")
+        self.assertEqual(found, {"native-element": [2, 3, 5, 6]})
+        self.assertIn("use the shadcn component in ui/button", result.stdout)
+        self.assertIn("pnpm dlx shadcn@latest add checkbox", result.stdout)
+        self.assertIn("pnpm dlx shadcn@latest add alert-dialog", result.stdout)
+        _, vendor = run(self.dir, "components")
+        self.assertNotIn("native-element", vendor)
+
+    def test_shadcn_project_flags_other_date_pickers_and_libraries(self):
+        (self.dir / "components.json").write_text("{}")
+        (self.dir / "When.tsx").write_text(
+            'import DatePicker from "react-datepicker"\n'
+            'import { DayPicker } from "react-day-picker"\n'
+            'import { Button } from "@mui/material"\n'
+            'import * as Tooltip from "@radix-ui/react-tooltip"\n'
+            'import { Calendar } from "@/components/ui/calendar"\n'
+            '<input type="datetime-local" />\n'
+            '<Input type="time" />\n'
+            'import type { DateRange } from "react-day-picker"\n'
+            '<Trigger render={<button type="button" />} />\n'
+        )
+        result, found = run(self.dir, "When.tsx")
+        self.assertEqual(found, {"date-picker": [1, 2, 6], "foreign-component": [3, 4]})
+        self.assertIn("Popover with a Calendar", result.stdout)
+
+    def test_shadcn_project_flags_an_edit_of_a_generated_component(self):
+        (self.dir / "components.json").write_text("{}")
+        subprocess.run(["git", "init", "-q"], cwd=self.dir, check=True)
+        ui = self.dir / "components" / "ui"
+        ui.mkdir(parents=True)
+        (ui / "button.tsx").write_text("<button className={cn()} />\n")
+        _, found = run(self.dir)
+        self.assertEqual(found.get("shadcn-file"), [1])
+
+    def test_shadcn_project_flags_a_table_with_its_own_sorting(self):
+        (self.dir / "components.json").write_text("{}")
+        (self.dir / "Users.tsx").write_text('const [sortBy, setSortBy] = useState("name")\n<Table>\n')
+        _, found = run(self.dir, "Users.tsx")
+        self.assertEqual(found, {"data-table": [2]})
+        (self.dir / "Users.tsx").write_text('import { useReactTable } from "@tanstack/react-table"\nconst [sortBy, setSortBy] = useState("name")\n<Table>\n')
+        _, found = run(self.dir, "Users.tsx")
+        self.assertEqual(found, {})
+
+    def test_native_elements_pass_without_shadcn(self):
+        (self.dir / "Form.tsx").write_text('<button onClick={go}>Go</button>\n<select></select>\n')
+        _, found = run(self.dir, "Form.tsx")
+        self.assertEqual(found, {})
+
 
 if __name__ == "__main__":
     unittest.main()

@@ -89,6 +89,12 @@ class LintHookTest(unittest.TestCase):
         self.assertNotIn("text-gray-500", context)
         self.assertIsNone(hook("ui-lint.py", {"cwd": str(folder), "tool_input": {"file_path": str(page), "new_string": "<p>fine</p>"}}))
 
+    def test_a_short_line_does_not_match_older_lines(self):
+        folder = pathlib.Path(tempfile.mkdtemp())
+        style = folder / "app.css"
+        style.write_text(".old { color: #123456; }\n.new { margin: 0; }\n")
+        self.assertIsNone(hook("ui-lint.py", {"cwd": str(folder), "tool_input": {"file_path": str(style), "new_string": ".new { margin: 0; }\n}"}}))
+
 
 class CorrectionHookTest(unittest.TestCase):
     def context(self, prompt):

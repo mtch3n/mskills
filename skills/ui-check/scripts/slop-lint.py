@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+import functools
 import pathlib
 import re
 import subprocess
@@ -11,7 +12,7 @@ TOKEN_FILE = re.compile(r"(token|theme|tailwind\.config|variables)", re.I)
 CUSTOM_PROPERTY = re.compile(r"--[\w-]+\s*:[^;]*;?")
 HUES = "red|orange|amber|yellow|lime|green|emerald|teal|cyan|sky|blue|indigo|violet|purple|fuchsia|pink|rose|slate|gray|grey|zinc|neutral|stone"
 COMMENT = re.compile(r"^\s*(?://|/\*|\*|\{/\*|<!--)")
-VENDOR = re.compile(r"/(?:node_modules|dist|build|\.next|components/ui)/")
+VENDOR = re.compile(r"(?:^|/)(?:node_modules|dist|build|\.next|components/ui)/")
 ALLOW = re.compile(r"slop-lint allow ([\w-]+):[ \t]*(\S[^\n]*)")
 CLASS_ATTR = re.compile(r"""class(?:Name)?\s*=\s*(?:\{\s*)?["'`]([^"'`]*)["'`]""")
 
@@ -32,6 +33,75 @@ RULES = [
 ]
 
 
+COMPONENT_MARKUP = {".jsx", ".tsx", ".vue", ".svelte", ".astro", ".mdx"}
+NATIVE = re.compile(r"(?<!render=\{)<(select|button|textarea|input|dialog|details|progress|label|hr|table)\b([^<>]*)")
+INPUT_TYPE = re.compile(r"""\stype\s*=\s*\{?\s*["']([\w-]+)["']""")
+SHADCN = {
+    "select": "select", "button": "button", "textarea": "textarea", "dialog": "dialog", "details": "collapsible",
+    "progress": "progress", "label": "label", "hr": "separator", "table": "table",
+    "checkbox": "checkbox", "radio": "radio-group", "range": "slider", "input": "input",
+}
+DATE_TYPES = {"date", "datetime-local", "month", "week"}
+DATE_PICKER = "use the shadcn date picker: a Popover with a Calendar, and an Input type=time for the time"
+BROWSER_DIALOG = re.compile(r"""\bwindow\.(?:alert|confirm|prompt)\(|(?<![\w.])(?:alert|confirm|prompt)\(\s*["'`]""")
+ALIAS_UI = re.compile(r'"ui"\s*:\s*"([^"]+)"')
+TS_PATHS = re.compile(r'"([^"]+)/\*"\s*:\s*\[\s*"([^"*]*)\*"')
+TEST_FILE = re.compile(r"(?:\.(?:test|spec|stories)\.\w+$|(?:^|/)(?:__tests__|tests?|e2e)/)")
+IMPORT = re.compile(r"""^(?!\s*import\s+type\b).*?(?:\bfrom\s+|\bimport\s+|\brequire\(\s*)["']([^"']+)["']""")
+DATE_LIBRARIES = re.compile(r"^(?:react-datepicker|react-date-picker|react-datetime-picker|react-datetime|react-calendar|react-flatpickr|flatpickr|pikaday|vanilla-calendar[\w-]*|@mui/x-date-pickers[\w/-]*|@mantine/dates|react-day-picker)(?:/|$)")
+FOREIGN_LIBRARIES = re.compile(r"^(?:@mui/material|@mui/joy|antd|@chakra-ui/[\w-]+|@mantine/core|react-bootstrap|primereact|@headlessui/react|react-select|react-tooltip|react-modal|react-toastify|react-hot-toast|@radix-ui/[\w-]+|@base-ui-components/react|@base-ui/react)(?:/|$)")
+
+
+@functools.cache
+def shadcn_ui(folder):
+    for project in (folder, *folder.parents):
+        config = project / "components.json"
+        if config.is_file():
+            break
+        if (project / ".git").exists():
+            return None
+    else:
+        return None
+    alias = (ALIAS_UI.search(config.read_text(errors="replace")) or [None, "@/components/ui"])[1]
+    candidates = []
+    for tsconfig in sorted(project.glob("tsconfig*.json")):
+        for prefix, target in TS_PATHS.findall(tsconfig.read_text(errors="replace")):
+            if alias.startswith(prefix + "/"):
+                candidates.append(project / target / alias[len(prefix) + 1:])
+    tail = alias.split("/", 1)[1] if alias.startswith(("@/", "~/")) else alias
+    candidates += [project / "src" / tail, project / tail]
+    return next((c for c in candidates if c.is_dir()), candidates[-1])
+
+
+def native_elements(text, ui):
+    found = []
+    for tag, attrs in NATIVE.findall(text):
+        name = tag
+        if tag == "input":
+            kind = (INPUT_TYPE.search(attrs) or [None, "text"])[1].lower()
+            if kind in {"hidden", "submit", "reset", "image"}:
+                continue
+            if kind in DATE_TYPES:
+                found.append(("date-picker", f"native <input type={kind}> in a shadcn project; {DATE_PICKER} (`pnpm dlx shadcn@latest add calendar popover`)"))
+                continue
+            name = kind if kind in SHADCN else "input"
+        component = SHADCN[name]
+        have = any((ui / f"{component}{ext}").is_file() for ext in (".tsx", ".jsx", ".vue", ".svelte"))
+        hint = f"use the shadcn component in {ui.name}/{component}" if have else f"add it with `pnpm dlx shadcn@latest add {component}` and use it"
+        if tag == "table":
+            hint += ", or the Data Table (Table with @tanstack/react-table) for sorting, filters or pages"
+        found.append(("native-element", f"native <{tag}{' type=' + name if tag == 'input' and name != 'input' else ''}> in a shadcn project; {hint}"))
+    if BROWSER_DIALOG.search(text):
+        have = (ui / "alert-dialog.tsx").is_file()
+        found.append(("native-element", "browser alert or confirm in a shadcn project; " + ("use the shadcn alert-dialog" if have else "add it with `pnpm dlx shadcn@latest add alert-dialog` and use it")))
+    for module in IMPORT.findall(text):
+        if DATE_LIBRARIES.match(module):
+            found.append(("date-picker", f"{module} in a shadcn project; {DATE_PICKER}"))
+        elif FOREIGN_LIBRARIES.match(module):
+            found.append(("foreign-component", f"{module} in a shadcn project; use the shadcn component in {ui.name}/ for this part"))
+    return found
+
+
 def eyebrow(line):
     for classes in CLASS_ATTR.findall(line):
         words = set(classes.split())
@@ -40,11 +110,13 @@ def eyebrow(line):
     return False
 
 
-def check_line(path, text):
+def check_line(path, text, ui=None):
     suffix = path.suffix.lower()
     found = []
     if COMMENT.match(text):
         return []
+    if ui and suffix in COMPONENT_MARKUP:
+        found += native_elements(text, ui)
     for kind, exts, pattern, message in RULES:
         if suffix not in exts or (kind == "glass" and "inset-0" in text) or (kind == "accent-stripe" and "blockquote" in text):
             continue
@@ -102,12 +174,32 @@ def file_lines(paths):
 def lint(lines):
     results = []
     for path in sorted(lines):
-        if path.suffix.lower() not in UI:
+        ui = None if TEST_FILE.search(path.as_posix()) else shadcn_ui(path.resolve().parent)
+        if ui and "components/ui/" in path.as_posix() and lines[path]:
+            number, text = lines[path][0]
+            results.append((path, number, "shadcn-file", "you changed a generated shadcn component; keep the change only if the project rules allow it, else change the code that uses it", text.strip()))
+        if path.suffix.lower() not in UI or VENDOR.search(path.as_posix()):
             continue
         for number, text in lines[path]:
-            for kind, message in check_line(path, text):
+            for kind, message in check_line(path, text, ui):
                 results.append((path, number, kind, message, text.strip()))
+        if ui and path.suffix.lower() in COMPONENT_MARKUP and path.is_file():
+            results += data_table(path)
     return results
+
+
+TABLE_TAG = re.compile(r"<(?:table|Table)\b")
+HANDMADE_TABLE = re.compile(r"\b(?:set)?(?:sort(?:By|Key|Dir|Direction|Order|Column|Field)|pageIndex|pageSize|currentPage|rowsPerPage)\b", re.I)
+
+
+def data_table(path):
+    source = path.read_text(errors="replace")
+    if "@tanstack/react-table" in source or not HANDMADE_TABLE.search(source):
+        return []
+    for number, text in enumerate(source.splitlines(), 1):
+        if TABLE_TAG.search(text):
+            return [(path, number, "data-table", "table with its own sorting or pages in a shadcn project; use the shadcn Data Table: the Table component with @tanstack/react-table", text.strip())]
+    return []
 
 
 def allowed(root):

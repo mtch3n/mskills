@@ -29,7 +29,8 @@ uv run --script <base>/scripts/ui-check.py <page> [<page> ...] --stress --intera
   and one time when you think that you are done.
 - In Claude Code, a hook measures the pages again when you stop. Fix what it reports.
 - `python3 <base>/scripts/slop-lint.py [<file> ...]` checks the source for raw colors
-  and slop. With no file, it checks the lines that you added.
+  and slop. With no file, it checks the lines that you added. In a shadcn project, it
+  also reports each native element that has a shadcn component.
 - If the browser is not installed, run
   `uvx playwright@1.63.0 install chromium-headless-shell` one time.
 

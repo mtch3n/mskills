@@ -23,7 +23,7 @@ def main():
     path = data.get("file_path") or ""
     if not path.endswith(UI) or not pathlib.Path(path).is_file():
         return 0
-    lines = written(data)
+    lines = {line[:120] for line in written(data)}
     if not lines:
         return 0
     try:
@@ -33,7 +33,7 @@ def main():
     found = []
     for line in result.stdout.splitlines()[:-1]:
         text = line.split(" | ", 1)[1] if " | " in line else ""
-        if any(text[:100] in added or added[:100] in text for added in lines if text):
+        if text in lines or ": shadcn-file: " in line or ": data-table: " in line:
             found.append(line)
     allowed = [line for line in result.stdout.splitlines() if line.startswith("allowed by DESIGN.md")]
     if not found:

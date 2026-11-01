@@ -63,6 +63,23 @@ it.
 
 - Use the component from the library, for example its tooltip, date picker and
   select. Do not use the browser `title` tooltip. `native-tooltip`
+- In a shadcn project (a `components.json` file), use the shadcn component, not the
+  native element: `Button`, `Input`, `Checkbox`, `Select`, `Dialog`, `Tooltip` and the
+  others. Do not use the browser `alert` or `confirm`. If the component is not in the
+  project, add it with `pnpm dlx shadcn@latest add <name>`. `native-element`
+- In a shadcn project, use the shadcn date picker: a `Popover` with a `Calendar`, and
+  an `Input` with `type="time"` for the time. Do not use `<input type="date">`,
+  `datetime-local`, or another date picker library. `date-picker`
+- In a shadcn project, show a table with the `Table` component. If the table sorts,
+  filters or has pages, use the shadcn Data Table: `Table` with
+  `@tanstack/react-table`. Do not write your own sorting or pages. `data-table`
+- In a shadcn project, do not import another component library, for example MUI,
+  Ant Design, Chakra or react-select. Do not import Radix or Base UI directly. Use
+  the shadcn component that wraps it. `foreign-component`
+- Do not change the generated shadcn files in `components/ui` if the project rules do
+  not allow it. Change the code that uses them. `shadcn-file`
+- Use the default shadcn theme tokens. Do not add colors to the theme if the user
+  does not ask for them.
 - Use one icon set with one line weight. Do not draw icons by hand. `icon-sets`
 - Do not color an icon if it does not show a status.
 - Use a badge only for a real status, not for decoration. `pills`
