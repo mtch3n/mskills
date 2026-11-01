@@ -13,6 +13,7 @@ CHECK = SCRIPTS / "ui-check.py"
 PAGES = re.compile(r"^\s*[-*]?\s*ui-check:\s*(\S.*)$")
 DEV_PORTS = [3000, 3001, 5173, 5174, 4321, 4173, 8080, 8000, 5000]
 STYLESHEET = re.compile(r"""<link\b[^>]*href=["']([^"':]+\.css)["']""")
+REFERENCE = re.compile(r"""<(?:link|script|img)\b[^>]*(?:href|src)=["']([^"':#?]+)["']""")
 
 
 def root_of(cwd):
@@ -64,6 +65,11 @@ def stylesheets(pages):
         if path.is_file():
             found += [str(path.parent / href) for href in STYLESHEET.findall(path.read_text(errors="replace")) if (path.parent / href).is_file()]
     return list(dict.fromkeys(found))
+
+
+def references(page):
+    path = pathlib.Path(page)
+    return {str((path.parent / ref).resolve()) for ref in REFERENCE.findall(path.read_text(errors="replace"))}
 
 
 def lint(files, cwd):

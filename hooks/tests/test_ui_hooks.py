@@ -83,6 +83,14 @@ class StopHookTest(unittest.TestCase):
         prompt = {"type": "user", "uuid": "p2", "timestamp": self.start["timestamp"], "message": {"content": "now fix the header"}}
         self.assertEqual(self.stop(prompt, tool("Edit", file_path=str(self.css)))["decision"], "block")
 
+    def test_a_style_with_the_same_name_in_another_folder_does_not_match(self):
+        other = self.dir / "elsewhere"
+        other.mkdir()
+        (other / "app.css").write_text(".wide { width: 900px; height: 20px; }\n")
+        (self.dir / "index.html").write_text("<!doctype html><html><head><meta name='viewport' content='width=device-width'><link rel='stylesheet' href='app.css'></head><body><div class='wide'></div></body></html>")
+        out = self.stop(tool("Edit", file_path=str(other / "app.css")))
+        self.assertNotIn("index.html", (out or {}).get("reason", ""))
+
     def test_skips_test_fixtures(self):
         fixture = self.dir / "tests" / "pages" / "defects.css"
         fixture.parent.mkdir(parents=True)

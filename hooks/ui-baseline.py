@@ -37,16 +37,19 @@ def main():
     except (json.JSONDecodeError, ValueError):
         return 0
     prompt = payload.get("prompt") or ""
-    if NOT_USER.search(prompt) or not (OPEN.search(prompt) and UI.search(prompt)):
+    if NOT_USER.search(prompt):
+        return 0
+    state = pathlib.Path(tempfile.gettempdir()) / f"ui-baseline-{payload.get('session_id') or 'session'}.json"
+    state.unlink(missing_ok=True)
+    if not (OPEN.search(prompt) and UI.search(prompt)):
         return 0
     cwd = payload.get("cwd") or os.getcwd()
     root = ui.root_of(cwd)
     pages = named_pages(prompt, root)
     if not pages:
         return 0
-    session = payload.get("session_id") or "session"
-    (pathlib.Path(tempfile.gettempdir()) / f"ui-baseline-{session}.json").write_text(json.dumps({"pages": pages}))
     lines = [text for _, _, text in ui.measure(pages, cwd, ["--interact"], 90)]
+    state.write_text(json.dumps({"pages": pages, "shown": lines}))
     found = ui.lint(ui.stylesheets(pages) + [p for p in pages if pathlib.Path(p).is_file()], cwd)
     if not lines and not found:
         return 0
@@ -56,7 +59,8 @@ def main():
         + "\n".join(lines[:30]) + (f"\n... {len(lines) - 30} more" if len(lines) > 30 else "")
         + (f"\n\nslop-lint on these pages and their styles:\n{found}" if found else "")
         + "\n\nThese problems are already on the page. Fix them as part of this task, in one pass. "
-        "Fix each F line. Fix each W and S line, or tell the user why the project's rules allow it. "
+        "Fix each F line. Fix each W line, or tell the user why the project's rules allow it. An S line is a question: remove the item only if it is decoration that no rule asks for. "
+        "Do not remove content, data or controls to make a check pass. "
         "The text after @ is the CSS rule that sets the value. The hook measures again when you stop."
     )
     json.dump({"hookSpecificOutput": {"hookEventName": "UserPromptSubmit", "additionalContext": context}}, sys.stdout)

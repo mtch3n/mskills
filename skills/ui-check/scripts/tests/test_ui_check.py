@@ -321,6 +321,10 @@ class CopyTest(Browser):
         self.assertNotIn("glass", smells(report))
         self.assertNotIn("tinted-box", smells(report))
 
+    def test_smaller_code_text_is_not_drift(self):
+        html = "".join(f"<p style='font-size:14px'>Line {k}</p>" for k in range(5)) + "<code style='font-size:13px'>npm run build</code>"
+        self.assertNotIn("drift", kinds(self.measure_html(html)))
+
     def test_long_button_label_and_filler(self):
         report = self.measure_html("<p>Just to confirm: here you can simply upload.</p><button>Click here to save all your changes</button>")
         self.assertIn("long-label", kinds(report))

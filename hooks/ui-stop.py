@@ -105,10 +105,10 @@ def pages_for(files, cwd, named):
     listed, base = ui.listed_pages(root)
     direct = [f for f in files if f.endswith((".html", ".htm"))]
     shared = []
-    assets = {pathlib.Path(f).name for f in files if not f.endswith((".html", ".htm"))}
+    assets = {str(pathlib.Path(f).resolve()) for f in files if not f.endswith((".html", ".htm"))}
     if assets:
         for path in ui.html_files(root):
-            if str(path) not in direct and path.is_file() and any(asset in path.read_text(errors="replace") for asset in assets):
+            if str(path) not in direct and path.is_file() and not FIXTURE.search(path.as_posix()) and assets & ui.references(path):
                 shared.append(str(path))
     routes = [r for r in (route_of(f, root) for f in files) if r is not None]
     server = base or ((routes or not (direct or shared)) and ui.dev_server())
@@ -133,9 +133,9 @@ def last_prompt(transcript):
     return last
 
 
-def baseline_pages(session):
+def baseline(session):
     path = pathlib.Path(tempfile.gettempdir()) / f"ui-baseline-{session}.json"
-    return json.loads(path.read_text()).get("pages", []) if path.exists() else []
+    return json.loads(path.read_text()) if path.exists() else {}
 
 
 def main():
@@ -152,13 +152,13 @@ def main():
     state = json.loads(state_file.read_text()) if state_file.exists() else {}
     prompt = last_prompt(transcript)
     if not state or state.get("prompt") != prompt:
-        state = {"prompt": prompt, "rounds": 0, "signature": "", "shown": []}
+        state = {"prompt": prompt, "rounds": 0, "signature": "", "shown": baseline(session).get("shown", [])}
     try:
         files = changed_files(transcript, cwd)
         if not files or state["rounds"] >= ROUNDS or signature(files) == state["signature"]:
             return 0
         state["signature"] = signature(files)
-        pages, direct = pages_for(files, cwd, baseline_pages(session))
+        pages, direct = pages_for(files, cwd, baseline(session).get("pages", []))
         found = ui.lint(files, cwd)
         lines = ui.measure(pages, cwd, ["--stress", "--interact"], 270) if pages else []
     except (OSError, ValueError, KeyError, subprocess.SubprocessError):
@@ -195,7 +195,8 @@ def main():
         "The ui-check hook measured the pages that use the files you changed, with longer text, keyboard focus, hover and open menus:\n"
         + "\n".join(f"- {p}" for p in pages) + "\n\n"
         + "\n".join(shown) + (f"\n... {more} more" if more > 0 else "") + "\n\n"
-        "Fix each F line. Fix each W and S line, or tell the user why the project's rules allow it. "
+        "Fix each F line. Fix each W line, or tell the user why the project's rules allow it. An S line is a question: remove the item only if it is decoration that no rule asks for. "
+        "Do not remove content, data or controls to make a check pass. "
         "The text after @ is the CSS rule that sets the value. Fix the cause in the shared style when the same problem is on several pages. "
         "On a page that the user did not name, change only what an F line needs. "
         "If a page was not measured, say so in your report and do not say that it is correct."

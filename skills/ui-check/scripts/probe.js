@@ -763,6 +763,7 @@
       const partner = list.find(([v, c]) => v !== rare && c >= 3 && c > rareCount && closeEnough(rare, v));
       if (!partner) continue;
       const node = where.get(field + "=" + rare);
+      if (field === "fontSize" && node.el.closest("code,pre,kbd,samp")) continue;
       add("warn", "drift", `${field} ${describeValue(rare)} is used ${rareCount}× next to ${describeValue(partner[0])} used ${partner[1]}×`, [node], [node.text || node.b]);
     }
   };
