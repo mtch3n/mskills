@@ -1,0 +1,8 @@
+{
+  "tier": "S",
+  "set": "holdout",
+  "runs": 5,
+  "max_turns": 40,
+  "timeout": 1200,
+  "prompt": "Add a due date field and a status field (Draft, Sent, Paid) to the new invoice form."
+}

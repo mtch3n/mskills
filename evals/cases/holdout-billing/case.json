@@ -1,0 +1,8 @@
+{
+  "tier": "M",
+  "set": "holdout",
+  "runs": 5,
+  "max_turns": 60,
+  "timeout": 1800,
+  "prompt": "Clean up the Billing page before tomorrow's demo."
+}

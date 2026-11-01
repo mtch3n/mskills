@@ -35,6 +35,8 @@ score, cost, turns, peak context, cache reads and images for each case and arm.
 | `ui-slop-dashboard` | M | dev | A vague complaint about a dashboard that looks generated. Checks that the slop on the dashboard goes, that the sidebar icons are centred on every page, that the numbers stay, and the rule. Needs `uv`. |
 | `ui-render-only` | M | dev | A UI complaint whose causes show only on the rendered page. Chips sized in `em` differ by context. On a phone, a long link pushes the Copy button out of its box. Checks the fix, the same bug on another page, a longer link, the scope and the rule. Needs `uv`. |
 | `ui-polish` | M | dev | "Polish the Team page" with no defect named. The page has 7 defects that the agent must find. Examples are uneven chips, a hidden Copy button on a phone and no focus style. Checks each fix, the content, the scope and new problems. Needs `uv`. |
+| `holdout-billing` | M | holdout | "Clean up the Billing page" with no defect named. The page has 6 defects. Examples are plan buttons that do not align, a table that does not fit a phone and a row menu that a box cuts off. The grader does not use `ui-antislop`. It measures the page with its own Playwright script. Needs `uv`. |
+| `holdout-shadcn-form` | S | holdout | Add a due date and a status field to a form in a shadcn project. Checks that the agent uses the shadcn date picker and select, and not native elements or another library. Reads the source only. |
 | `ship-check-cli` | M | holdout | Defects found and fixed, and traps avoided, in a CLI change |
 | `ste-holdout` | S | holdout | The same as `ste-rewrite`, with a different text |
 

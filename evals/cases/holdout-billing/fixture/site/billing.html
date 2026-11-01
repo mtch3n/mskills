@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Billing · Northwind</title>
+  <link rel="stylesheet" href="app.css">
+</head>
+<body>
+  <header class="header">
+    <span class="brand">Northwind</span>
+    <nav><a href="billing.html">Billing</a><a href="account.html">Account</a></nav>
+  </header>
+  <main class="page">
+    <h1>Billing</h1>
+    <p class="lead">🚀 Supercharge your billing with seamless, effortless invoices.</p>
+
+    <h2>Plan</h2>
+    <div class="plans">
+      <section class="card plan">
+        <h3>Starter</h3>
+        <p class="price">$0</p>
+        <ul><li>1 workspace</li><li>100 invoices a month</li></ul>
+        <button class="button outline">Choose plan</button>
+      </section>
+      <section class="card plan">
+        <h3>Team</h3>
+        <p class="price">$24</p>
+        <ul><li>5 workspaces</li><li>Unlimited invoices</li><li>Shared templates</li><li>Reminders by email</li></ul>
+        <button class="button pill">Current plan</button>
+      </section>
+      <section class="card plan">
+        <h3>Business</h3>
+        <p class="price">$79</p>
+        <ul><li>Unlimited workspaces</li><li>Approvals</li><li>Audit log</li></ul>
+        <button class="button outline">Choose plan</button>
+      </section>
+    </div>
+
+    <h2>Invoices</h2>
+    <div class="card">
+      <table class="table">
+        <thead><tr><th>Invoice</th><th>Issued</th><th>Due</th><th>Amount</th><th><span class="sr">Actions</span></th></tr></thead>
+        <tbody>
+          <tr><td>INV-2026-000184-NORTHWIND-EU</td><td>Oct 1, 2026</td><td class="due">Oct 31, 2026</td><td>$24.00</td><td class="actions"><button class="icon-button" aria-label="Invoice actions" aria-haspopup="menu" aria-expanded="false">⋯</button><ul class="menu" role="menu" hidden><li><button role="menuitem">Download PDF</button></li><li><button role="menuitem">Send again</button></li><li><button role="menuitem">Void invoice</button></li></ul></td></tr>
+          <tr><td>INV-2026-000163-NORTHWIND-EU</td><td>Sep 1, 2026</td><td class="due">Sep 30, 2026</td><td>$24.00</td><td class="actions"><button class="icon-button" aria-label="Invoice actions" aria-haspopup="menu" aria-expanded="false">⋯</button><ul class="menu" role="menu" hidden><li><button role="menuitem">Download PDF</button></li><li><button role="menuitem">Send again</button></li><li><button role="menuitem">Void invoice</button></li></ul></td></tr>
+          <tr><td>INV-2026-000141-NORTHWIND-EU</td><td>Aug 1, 2026</td><td class="due">Aug 31, 2026</td><td>$24.00</td><td class="actions"><button class="icon-button" aria-label="Invoice actions" aria-haspopup="menu" aria-expanded="false">⋯</button><ul class="menu" role="menu" hidden><li><button role="menuitem">Download PDF</button></li><li><button role="menuitem">Send again</button></li><li><button role="menuitem">Void invoice</button></li></ul></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </main>
+  <script>
+    for (const trigger of document.querySelectorAll("[aria-haspopup=menu]")) {
+      trigger.addEventListener("click", () => {
+        const menu = trigger.nextElementSibling;
+        const open = trigger.getAttribute("aria-expanded") === "true";
+        trigger.setAttribute("aria-expanded", String(!open));
+        menu.hidden = open;
+      });
+    }
+  </script>
+</body>
+</html>
