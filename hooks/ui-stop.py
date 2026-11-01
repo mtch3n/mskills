@@ -78,17 +78,6 @@ def changed_files(transcript, cwd):
     return sorted(str(p) for p in files if p.is_file() and p.resolve().is_relative_to(root) and p.stat().st_mtime >= start and not FIXTURE.search(p.as_posix()))
 
 
-def measured_after_edit(transcript, cwd):
-    last_edit = last_measure = -1
-    for index, event in enumerate(events(transcript)):
-        for use in tool_uses(event):
-            if use.get("name") == "Bash" and MEASURE.search((use.get("input") or {}).get("command") or ""):
-                last_measure = index
-            if touched(use, cwd):
-                last_edit = index
-    return last_measure > last_edit
-
-
 def route_of(path, root):
     rel = pathlib.Path(path).resolve().relative_to(root).as_posix() if pathlib.Path(path).resolve().is_relative_to(root) else ""
     for pattern in ROUTES:
@@ -117,8 +106,7 @@ def pages_for(files, cwd, named):
         direct += [server + r for r in dict.fromkeys(routes or ["/"])]
     shared += [item for item in listed if not (base and item.rstrip("/") == base)]
     direct += [p for p in named if p not in direct]
-    pages = list(dict.fromkeys(direct + shared))[:6]
-    return pages, {ui.label(p) for p in direct}
+    return list(dict.fromkeys(direct + shared))[:6]
 
 
 def signature(files):
@@ -159,51 +147,31 @@ def main():
         if not files or state["rounds"] >= ROUNDS or signature(files) == state["signature"]:
             return 0
         state["signature"] = signature(files)
-        pages, direct = pages_for(files, cwd, baseline(session).get("pages", []))
+        pages = pages_for(files, cwd, baseline(session).get("pages", []))
         found = ui.lint(files, cwd)
         lines = ui.measure(pages, cwd, ["--stress", "--interact"], 270) if pages else []
     except (OSError, ValueError, KeyError, subprocess.SubprocessError):
         return 0
-    first = state["rounds"] == 0
     state["rounds"] += 1
-    if not pages:
-        state_file.write_text(json.dumps(state))
-        if not first or payload.get("stop_hook_active") or measured_after_edit(transcript, cwd):
-            return 0
-        shown = "\n".join(f"- {f}" for f in files[:20])
-        reason = (
-            "You changed UI files, and the hook found no page to measure:\n"
-            f"{shown}\n\n"
-            "Load the `ui-antislop` skill and measure every page that uses these files with `--stress --interact`. "
-            "To let the hook measure by itself next time, add a line `ui-antislop: <url or file> ...` to DESIGN.md. "
-            "If no page can render, say so in your report and do not say that the UI is correct."
-        )
-        if found:
-            reason += f"\n\nslop-lint on these files:\n{found}"
-        json.dump({"decision": "block", "reason": reason}, sys.stdout)
-        return 0
-    kept = [text for page, severity, text in lines if severity == "F" or page in direct]
-    fails = [text for text in kept if text.startswith("F ")]
-    new = [text for text in kept if text not in state["shown"]]
+    fails = [text for page, severity, text in lines if severity == "F" and " not measured: " not in text]
+    new = [text for text in fails if text not in state["shown"]]
     lint_new = found and found not in state["shown"]
     state["shown"] += new + ([found] if lint_new else [])
     state_file.write_text(json.dumps(state))
-    if not fails and not new and not lint_new:
+    if not new and not (lint_new and not payload.get("stop_hook_active")):
         return 0
-    shown = kept[:30]
-    more = len(kept) - len(shown)
-    reason = (
-        "The ui-antislop hook measured the pages that use the files you changed, with longer text, keyboard focus, hover and open menus:\n"
-        + "\n".join(f"- {p}" for p in pages) + "\n\n"
-        + "\n".join(shown) + (f"\n... {more} more" if more > 0 else "") + "\n\n"
-        "Fix each F line. Fix each W line, or tell the user why the project's rules allow it. An S line is a question: remove the item only if it is decoration that no rule asks for. "
-        "Do not remove content, data or controls to make a check pass. "
-        "The text after @ is the CSS rule that sets the value. Fix the cause in the shared style when the same problem is on several pages. "
-        "On a page that the user did not name, change only what an F line needs. "
-        "If a page was not measured, say so in your report and do not say that it is correct."
-    )
-    if found and lint_new:
-        reason += f"\n\nslop-lint on the changed files:\n{found}"
+    reason = "The ui-antislop hook checked the files you changed."
+    if new:
+        reason += (
+            " It measured the pages that use them, with longer text, keyboard focus, hover and open menus:\n"
+            + "\n".join(f"- {p}" for p in pages) + "\n\n"
+            + "\n".join(new[:30]) + (f"\n... {len(new) - 30} more" if len(new) > 30 else "") + "\n\n"
+            "Fix each F line. Do not remove content, data or controls to make a check pass. "
+            "The text after @ is the CSS rule that sets the value. Fix the cause in the shared style when the same problem is on several pages. "
+            "On a page that the user did not name, change only what an F line needs."
+        )
+    if lint_new:
+        reason += f"\n\nslop-lint on the changed files:\n{found}\n\nFix each finding, or tell the user why the project's rules allow it."
     json.dump({"decision": "block", "reason": reason}, sys.stdout)
     return 0
 

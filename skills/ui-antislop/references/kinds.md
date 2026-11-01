@@ -8,7 +8,7 @@
 | `F` fail | `broken-image`, `image-distorted`, `contrast` below the WCAG AA ratio | Fix it. |
 | `F` fail | From `--interact`: `focus-invisible`, `focus-clipped`, `focus-covered`, `popup-clipped`, `popup-covered`, `dialog-unreachable` | Fix it. |
 | `W` layout | `edge`, `gap`, `row-height`, `row-top`, `row-bottom`, `row-centre`, `icon-centre`, `baseline`, `off-centre`, `sticks-out`, `proximity`, `choice-centre`, `orphan-wrap` | Fix it, or write in the report why it is correct. A gap of 1 to 4 px is almost never correct. |
-| `W` components | `inconsistent`, `scale`, `drift`, `off-token`, `double-border`, `cramped-padding`, `control-font`, `target-size` | Fix it, or give the reason. |
+| `W` components | `inconsistent`, `card-actions`, `scale`, `drift`, `off-token`, `double-border`, `cramped-padding`, `control-font`, `target-size` | Fix it, or give the reason. |
 | `W` text | `line-length`, `small-text`, `headings`, `truncated`, `early-ellipsis`, `long-label` | Fix it, or give the reason. |
 | `W` words | `restates`, `chatty`, `text-heavy`, `wall-of-text`, `long-paragraph` | Remove the text. Do not write it again in other words. |
 | `W` tables | `table-column`, `numeric-align`, `empty-cell`, `long-table` | Fix it, or give the reason. |
@@ -45,7 +45,8 @@ the page uses. Many different values for one property show drift.
 - If the user asks for an open task on a page, for example "polish the Team page",
   a hook measures the page with `--interact` before you start. It finds the page from
   its name in the message or from the `ui-antislop:` line in `DESIGN.md`. It gives you
-  the problems that are already on the page. Fix them in the same pass.
+  the problems that are already on the page. Fix them in the same pass. The list is
+  not complete. Also read the page and its styles yourself.
 - After each edit of a UI file, a hook runs `slop-lint` on the lines that you wrote.
 - When you stop after you changed UI files, a hook finds the pages that use the
   files and measures them with `--stress --interact`. It finds the pages from a

@@ -59,9 +59,11 @@ def main():
         + "\n".join(lines[:30]) + (f"\n... {len(lines) - 30} more" if len(lines) > 30 else "")
         + (f"\n\nslop-lint on these pages and their styles:\n{found}" if found else "")
         + "\n\nThese problems are already on the page. Fix them as part of this task, in one pass. "
+        "This list is not complete: a tool measures only some problems. Read the page and its styles yourself, as you do with no list, "
+        "and fix the other problems that you find, for example parts that do not line up or one component with different styles. "
         "Fix each F line. Fix each W line, or tell the user why the project's rules allow it. An S line is a question: remove the item only if it is decoration that no rule asks for. "
         "Do not remove content, data or controls to make a check pass. "
-        "The text after @ is the CSS rule that sets the value. The hook measures again when you stop."
+        "The text after @ is the CSS rule that sets the value. When you stop, the hook measures again and shows only new F lines."
     )
     json.dump({"hookSpecificOutput": {"hookEventName": "UserPromptSubmit", "additionalContext": context}}, sys.stdout)
     return 0

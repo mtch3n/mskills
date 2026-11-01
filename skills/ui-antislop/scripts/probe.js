@@ -690,6 +690,24 @@
     const diff = differences(group).filter((d) => !d.startsWith("height") && !(touches(group) && d.startsWith("radius")));
     if (diff.length) add("warn", "inconsistent", `${group.length} elements with the same class differ: ${diff.join(", ")}`, group.slice(0, 4), group.slice(0, 4).map((k) => k.b));
   }
+  for (const parent of nodes) {
+    const kids = parent.kids.map((i) => nodes[i]).filter((k) => !k.hidden && !k.floating && height(k.b) > 64);
+    const rows = new Map();
+    for (const k of kids) {
+      const key = k.tag + ":" + Math.round(k.b.y1);
+      rows.set(key, [...(rows.get(key) || []), k]);
+    }
+    for (const row of rows.values()) {
+      if (row.length < 2 || Math.max(...row.map((k) => width(k.b))) > 1.2 * Math.min(...row.map((k) => width(k.b)))) continue;
+      const actions = row.map((card) => nodes.filter((n) => n.control && !n.hidden && n.el !== card.el && card.el.contains(n.el)).pop());
+      if (actions.some((a) => !a)) continue;
+      const bottoms = actions.map((a) => tenth(a.b.y2));
+      const cardBottoms = row.map((k) => k.b.y2);
+      if (Math.max(...cardBottoms) - Math.min(...cardBottoms) <= 1 && Math.max(...bottoms) - Math.min(...bottoms) > 1) add("warn", "card-actions", `the last controls of ${row.length} side-by-side boxes end at different heights: y=${[...new Set(bottoms)].join(" vs ")}`, actions.slice(0, 4), actions.slice(0, 4).map((a) => a.b));
+      const diff = differences(actions).filter((d) => d.startsWith("radius") || d.startsWith("height") || d.startsWith("font size"));
+      if (diff.length) add("warn", "inconsistent", `the last controls of ${row.length} side-by-side boxes differ: ${diff.join(", ")}`, actions.slice(0, 4), actions.slice(0, 4).map((a) => a.b));
+    }
+  }
 
   const orphans = [];
   for (const parent of nodes) {

@@ -209,6 +209,16 @@ class ConsistencyTest(Browser):
         html = "<style>.chip{display:inline-block;padding:2px 8px;border:1px solid #ccc;border-radius:6px}</style><p style='font-size:12px'><span class='chip'>a</span></p><p style='font-size:16px'><span class='chip'>b</span></p>"
         self.assertIn("inconsistent", kinds(self.measure_html(html)))
 
+    def test_actions_of_side_by_side_boxes(self):
+        box = "<div style='width:200px;border:1px solid #ccc;padding:16px'><p>{text}</p><button style='height:32px;border-radius:{r}px'>Go</button></div>"
+        uneven = self.measure_html("<div style='display:flex;gap:16px'>" + box.format(text="One", r=6) + box.format(text="Two words that wrap onto more lines here", r=6) + "</div>")
+        self.assertIn("card-actions", kinds(uneven))
+        mixed = self.measure_html("<div style='display:flex;gap:16px'>" + box.format(text="One", r=6) + box.format(text="Two", r=999) + "</div>")
+        self.assertTrue(any(f["kind"] == "inconsistent" and "radius 6 vs 999" in f["message"] for f in mixed["findings"]), mixed["findings"])
+        same = self.measure_html("<div style='display:flex;gap:16px;align-items:start'>" + box.format(text="One", r=6) * 2 + "</div>")
+        self.assertNotIn("card-actions", kinds(same))
+        self.assertNotIn("inconsistent", kinds(same))
+
     def test_too_many_font_sizes(self):
         html = "".join(f"<p style='font-size:{s}px'>t</p>" for s in [11, 12, 13, 14, 15, 16, 18, 20])
         self.assertIn("scale", kinds(self.measure_html(html)))

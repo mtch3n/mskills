@@ -144,7 +144,21 @@ Loading states and selected states are not measured yet.
 
 In the third eval run, the agents with the plugin ran `ui-antislop.py` 2 or 3 times
 and did not give `--stress` or `--interact`. Thus the skill now gives both options in
-the main command, and the Stop hook asks for them.
+the main command.
+
+In the first holdout run, the agents with the plugin got a lower score and used two
+times the cost of the agents with no plugin. There were three causes:
+
+- The baseline list did not have 2 of the 6 defects. The agents fixed only the
+  items on the list and did not look for more. Thus the baseline now tells the agent
+  that the list is not complete.
+- The Stop hook stopped the agent again for warnings. Thus it now stops the agent
+  only for a new fail or a new `slop-lint` finding.
+- In a project with no page to render, the Stop hook told the agent to measure. The
+  agent used many turns and did not get a measurement. Thus the hook now runs only
+  `slop-lint` when it finds no page.
+
+The two holdout cases are now known. A fair test needs new holdout cases.
 
 ## Too much text
 

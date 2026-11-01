@@ -34,19 +34,21 @@ class StopHookTest(unittest.TestCase):
     def test_blocks_after_an_unmeasured_ui_edit_and_runs_the_lint(self):
         out = self.stop(tool("Edit", file_path=str(self.css)))
         self.assertEqual(out["decision"], "block")
-        self.assertIn(str(self.css), out["reason"])
+        self.assertIn("app.css:1", out["reason"])
         self.assertIn("accent-stripe", out["reason"])
 
     def test_blocks_after_a_sed_edit(self):
         out = self.stop(tool("Bash", command="sed -i 's/12px/16px/' app.css"))
         self.assertEqual(out["decision"], "block")
 
-    def test_passes_when_measured_after_the_last_edit(self):
-        self.assertIsNone(self.stop(tool("Edit", file_path=str(self.css)), tool("Bash", command="uv run --script /x/ui-antislop.py app.html")))
+    def test_passes_a_clean_edit_with_no_page_to_measure(self):
+        self.css.write_text(".card { padding: 16px; }\n")
+        self.assertIsNone(self.stop(tool("Edit", file_path=str(self.css))))
 
-    def test_blocks_when_edited_again_after_the_measurement(self):
-        out = self.stop(tool("Edit", file_path=str(self.css)), tool("Bash", command="uv run --script /x/ui-antislop.py a.html"), tool("Write", file_path=str(self.css)))
-        self.assertEqual(out["decision"], "block")
+    def test_shows_a_lint_finding_one_time(self):
+        self.assertEqual(self.stop(tool("Edit", file_path=str(self.css)))["decision"], "block")
+        self.css.write_text(self.css.read_text() + "\n")
+        self.assertIsNone(self.stop(tool("Edit", file_path=str(self.css))))
 
     def test_passes_for_reads_non_ui_files_and_old_files(self):
         old = self.dir / "old.css"
@@ -68,7 +70,7 @@ class StopHookTest(unittest.TestCase):
         (self.dir / "index.html").write_text("<!doctype html><html lang='en'><head><meta name='viewport' content='width=device-width'><title>a</title><link rel='stylesheet' href='app.css'></head><body><main><h1>Files</h1><p>Two files.</p></main></body></html>")
         self.assertIsNone(self.stop(tool("Edit", file_path=str(self.css))))
 
-    def test_a_page_that_only_shares_the_style_gets_only_fails(self):
+    def test_warnings_do_not_block(self):
         self.css.write_text("p { font: 10px/1.5 Arial, sans-serif; margin: 0; }\n")
         (self.dir / "index.html").write_text("<!doctype html><html lang='en'><head><meta name='viewport' content='width=device-width'><title>a</title><link rel='stylesheet' href='app.css'></head><body><main><h1>Files</h1><p>Two files.</p></main></body></html>")
         self.assertIsNone(self.stop(tool("Edit", file_path=str(self.css))))
