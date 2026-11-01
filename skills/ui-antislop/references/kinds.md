@@ -1,4 +1,4 @@
-# ui-check reference
+# ui-antislop reference
 
 ## Kinds
 
@@ -35,7 +35,7 @@ the page uses. Many different values for one property show drift.
   amount of text.
 - `--variants` lists each pair of design options that share one layout.
 - `--out DIR` gets a framed screenshot, a crop for each finding and the JSON reports.
-  The default is `/tmp/ui-check`. `--frame all` draws the box of each element.
+  The default is `/tmp/ui-antislop`. `--frame all` draws the box of each element.
 - `--baseline DIR` lists what changed since an earlier `--out` folder.
 - `--verbose` also prints the layout values, the census and the image paths.
 - The exit code is 1 if there is a `fail`.
@@ -44,12 +44,12 @@ the page uses. Many different values for one property show drift.
 
 - If the user asks for an open task on a page, for example "polish the Team page",
   a hook measures the page with `--interact` before you start. It finds the page from
-  its name in the message or from the `ui-check:` line in `DESIGN.md`. It gives you
+  its name in the message or from the `ui-antislop:` line in `DESIGN.md`. It gives you
   the problems that are already on the page. Fix them in the same pass.
 - After each edit of a UI file, a hook runs `slop-lint` on the lines that you wrote.
 - When you stop after you changed UI files, a hook finds the pages that use the
   files and measures them with `--stress --interact`. It finds the pages from a
-  `ui-check: <url or file> ...` line in `DESIGN.md`, from the HTML files that use the
+  `ui-antislop: <url or file> ...` line in `DESIGN.md`, from the HTML files that use the
   changed files, or from a dev server on this computer and the routes of the changed
   files. On a page that only uses a changed style, it shows only the fails. It gives
   you the problems to fix. It does this up to 3 times for each user message. If it
@@ -76,4 +76,4 @@ the frame in the page. If a page needs a login, run it in that browser:
 - It does not measure loading states, selected states or motion.
 - Smells are heuristics. A smell is a question, not an error.
 
-The reasons for the checks are in `docs/ui-check.md` in the repository.
+The reasons for the checks are in `docs/ui-antislop.md` in the repository.

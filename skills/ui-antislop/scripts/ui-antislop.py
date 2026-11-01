@@ -356,7 +356,7 @@ def main():
     parser.add_argument("--mode", choices=["app", "marketing", "docs"], help="page type for the text checks; default: the script guesses")
     parser.add_argument("--interact", action="store_true", help="check keyboard focus and hover")
     parser.add_argument("--frame", choices=["issues", "all"], default="issues", help="issues: outline what was measured and mark findings; all: outline every element box")
-    parser.add_argument("--out", type=pathlib.Path, default=pathlib.Path(tempfile.gettempdir()) / "ui-check", help="folder for screenshots and JSON")
+    parser.add_argument("--out", type=pathlib.Path, default=pathlib.Path(tempfile.gettempdir()) / "ui-antislop", help="folder for screenshots and JSON")
     parser.add_argument("--baseline", type=pathlib.Path, help="an earlier --out folder; lists what changed since then")
     parser.add_argument("--stress", action="store_true", help="measure again with longer text and wider text spacing; lists the new fails")
     parser.add_argument("--verbose", action="store_true", help="also print the layout values, the census and the image paths")

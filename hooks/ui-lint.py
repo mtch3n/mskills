@@ -5,7 +5,7 @@ import subprocess
 import sys
 
 UI = (".css", ".scss", ".sass", ".less", ".html", ".htm", ".jsx", ".tsx", ".vue", ".svelte", ".astro", ".mdx")
-LINT = pathlib.Path(__file__).resolve().parent.parent / "skills" / "ui-check" / "scripts" / "slop-lint.py"
+LINT = pathlib.Path(__file__).resolve().parent.parent / "skills" / "ui-antislop" / "scripts" / "slop-lint.py"
 
 
 def written(data):

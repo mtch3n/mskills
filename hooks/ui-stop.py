@@ -13,7 +13,7 @@ import importlib.util
 UI = (".css", ".scss", ".sass", ".less", ".html", ".htm", ".jsx", ".tsx", ".vue", ".svelte", ".astro", ".mdx")
 UI_PATH = re.compile(r"[\w./~@+-]+(?:" + "|".join(re.escape(e) for e in UI) + r")\b")
 WRITES = re.compile(r"\bsed\s+-i|\bperl\s+-p?i|>|\btee\b|\bpython3?\b|\bmv\b|\bcp\b|\bpatch\b|\bgit\s+apply\b")
-MEASURE = re.compile(r"ui-check\.py|probe\.js")
+MEASURE = re.compile(r"ui-antislop\.py|probe\.js")
 EDIT_TOOLS = {"Edit", "Write", "MultiEdit"}
 ROUNDS = 3
 FIXTURE = re.compile(r"/(tests?|__tests__|fixtures?|__fixtures__|evals)/")
@@ -174,8 +174,8 @@ def main():
         reason = (
             "You changed UI files, and the hook found no page to measure:\n"
             f"{shown}\n\n"
-            "Load the `ui-check` skill and measure every page that uses these files with `--stress --interact`. "
-            "To let the hook measure by itself next time, add a line `ui-check: <url or file> ...` to DESIGN.md. "
+            "Load the `ui-antislop` skill and measure every page that uses these files with `--stress --interact`. "
+            "To let the hook measure by itself next time, add a line `ui-antislop: <url or file> ...` to DESIGN.md. "
             "If no page can render, say so in your report and do not say that the UI is correct."
         )
         if found:
@@ -193,7 +193,7 @@ def main():
     shown = kept[:30]
     more = len(kept) - len(shown)
     reason = (
-        "The ui-check hook measured the pages that use the files you changed, with longer text, keyboard focus, hover and open menus:\n"
+        "The ui-antislop hook measured the pages that use the files you changed, with longer text, keyboard focus, hover and open menus:\n"
         + "\n".join(f"- {p}" for p in pages) + "\n\n"
         + "\n".join(shown) + (f"\n... {more} more" if more > 0 else "") + "\n\n"
         "Fix each F line. Fix each W line, or tell the user why the project's rules allow it. An S line is a question: remove the item only if it is decoration that no rule asks for. "

@@ -6,7 +6,7 @@ import subprocess
 import tempfile
 
 HERE = pathlib.Path(__file__).resolve().parent
-UI_CHECK = HERE.parents[2] / "skills" / "ui-check" / "scripts" / "ui-check.py"
+UI_CHECK = HERE.parents[2] / "skills" / "ui-antislop" / "scripts" / "ui-antislop.py"
 PAGES = ["files", "shared", "settings"]
 WIDTHS = [390, 1280]
 ALLOWED = re.compile(r"^(site/[\w-]+\.(css|html)|DESIGN\.md)$")

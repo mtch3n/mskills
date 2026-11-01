@@ -7,7 +7,7 @@ import subprocess
 import tempfile
 
 HERE = pathlib.Path(__file__).resolve().parent
-SCRIPTS = HERE.parents[2] / "skills" / "ui-check" / "scripts"
+SCRIPTS = HERE.parents[2] / "skills" / "ui-antislop" / "scripts"
 PAGES = ["team", "projects", "settings"]
 WIDTHS = [390, 1280]
 ALLOWED = re.compile(r"^(site/[\w-]+\.(css|html)|DESIGN\.md)$")
@@ -23,7 +23,7 @@ spec.loader.exec_module(slop_lint)
 
 def measure(site):
     out = pathlib.Path(tempfile.mkdtemp(prefix="ui-render-only-"))
-    command = ["uv", "run", "--quiet", "--script", str(SCRIPTS / "ui-check.py"), *[str(site / f"{page}.html") for page in PAGES], "--stress", "--out", str(out)]
+    command = ["uv", "run", "--quiet", "--script", str(SCRIPTS / "ui-antislop.py"), *[str(site / f"{page}.html") for page in PAGES], "--stress", "--out", str(out)]
     for width in WIDTHS:
         command += ["--width", str(width)]
     subprocess.run(command, capture_output=True, text=True, timeout=900)

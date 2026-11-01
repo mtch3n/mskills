@@ -54,7 +54,7 @@ def main():
     if not lines and not found:
         return 0
     context = (
-        "Before you start, the ui-check hook measured the pages of this request:\n"
+        "Before you start, the ui-antislop hook measured the pages of this request:\n"
         + "\n".join(f"- {p}" for p in pages) + "\n\n"
         + "\n".join(lines[:30]) + (f"\n... {len(lines) - 30} more" if len(lines) > 30 else "")
         + (f"\n\nslop-lint on these pages and their styles:\n{found}" if found else "")

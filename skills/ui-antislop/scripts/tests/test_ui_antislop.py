@@ -5,10 +5,10 @@ import unittest
 from playwright.sync_api import sync_playwright
 
 HERE = pathlib.Path(__file__).resolve().parent
-SCRIPT = HERE.parent / "ui-check.py"
-spec = importlib.util.spec_from_file_location("ui_check", SCRIPT)
-ui_check = importlib.util.module_from_spec(spec)
-spec.loader.exec_module(ui_check)
+SCRIPT = HERE.parent / "ui-antislop.py"
+spec = importlib.util.spec_from_file_location("ui_antislop", SCRIPT)
+ui_antislop = importlib.util.module_from_spec(spec)
+spec.loader.exec_module(ui_antislop)
 
 DEFECT_FINDINGS = {"overflow-x", "clipped", "overlap", "edge", "row-height", "icon-centre", "gap", "off-centre", "table-column", "contrast", "drift", "numeric-align", "proximity"}
 DEFECT_SMELLS = {"gradient-text", "gradient", "glass", "glow", "purple", "emoji", "card-in-card", "tinted-box", "accent-stripe", "pills", "eyebrow", "subtitles", "native-tooltip", "hues", "stock-copy", "helper-text"}
@@ -27,13 +27,13 @@ class Browser(unittest.TestCase):
         cls.playwright.stop()
 
     def measure_file(self, name, width, frame="none"):
-        ui_check.load(self.page, (HERE / "pages" / name).as_uri(), width)
-        return self.page.evaluate(ui_check.PROBE, {"frame": frame})
+        ui_antislop.load(self.page, (HERE / "pages" / name).as_uri(), width)
+        return self.page.evaluate(ui_antislop.PROBE, {"frame": frame})
 
     def measure_html(self, html, width=800, frame="none"):
         self.page.set_viewport_size({"width": width, "height": 900})
         self.page.set_content(f"<!doctype html><html><head><style>body{{margin:0;font:16px/1.5 Arial,sans-serif}}</style></head><body>{html}</body></html>")
-        return self.page.evaluate(ui_check.PROBE, {"frame": frame})
+        return self.page.evaluate(ui_antislop.PROBE, {"frame": frame})
 
 
 def kinds(report):
@@ -130,20 +130,20 @@ class CompareTest(Browser):
     def test_baseline_lists_a_restyled_button(self):
         before = self.measure_file("clean.html", 1280)
         self.page.add_style_tag(content=".btn{padding:0 24px}")
-        after = self.page.evaluate(ui_check.PROBE, {"frame": "none"})
-        lines = ui_check.baseline_changes(after, before)
+        after = self.page.evaluate(ui_antislop.PROBE, {"frame": "none"})
+        lines = ui_antislop.baseline_changes(after, before)
         self.assertIn("1 restyled", lines[0])
         self.assertTrue(any("restyled  button.btn" in line and "padding" in line for line in lines))
 
     def test_unchanged_page_has_no_changes(self):
         before = self.measure_file("clean.html", 1280)
         after = self.measure_file("clean.html", 1280)
-        self.assertEqual(ui_check.baseline_changes(after, before), ["  0 restyled, 0 resized, 0 moved sideways, 0 moved up or down, 0 added, 0 removed"])
+        self.assertEqual(ui_antislop.baseline_changes(after, before), ["  0 restyled, 0 resized, 0 moved sideways, 0 moved up or down, 0 added, 0 removed"])
 
     def test_pages_with_different_layout_are_listed(self):
         a = self.measure_file("clean.html", 390)
         b = self.measure_file("defects.html", 390)
-        lines = ui_check.page_differences([a, b])
+        lines = ui_antislop.page_differences([a, b])
         self.assertTrue(any("controlHeight" in line for line in lines))
 
     def test_recoloured_variant_shares_the_layout(self):
@@ -151,8 +151,8 @@ class CompareTest(Browser):
         a = self.measure_html(base.format(c="#ddd"))
         b = self.measure_html(base.format(c="#0a7"))
         c = self.measure_html("<main style='padding:24px'><section style='height:300px;border:1px solid #ddd'><h2>Files</h2></section><div style='display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:16px'><div style='height:120px;background:#eee'></div><div style='height:120px;background:#eee'></div></div></main>")
-        self.assertEqual(len(ui_check.shared_layouts([a, b])), 1)
-        self.assertEqual(ui_check.shared_layouts([a, c]), [])
+        self.assertEqual(len(ui_antislop.shared_layouts([a, b])), 1)
+        self.assertEqual(ui_antislop.shared_layouts([a, c]), [])
 
 
 if __name__ == "__main__":
@@ -226,7 +226,7 @@ class HardNoAndTableTest(Browser):
     def test_broken_image(self):
         self.page.set_content("<img src='missing-file.png' width='40' height='40' alt='x'>")
         self.page.wait_for_load_state("load")
-        report = self.page.evaluate(ui_check.PROBE, {"frame": "none"})
+        report = self.page.evaluate(ui_antislop.PROBE, {"frame": "none"})
         self.assertIn("broken-image", kinds(report))
 
     def test_number_column_and_missing_values(self):
@@ -247,8 +247,8 @@ class HardNoAndTableTest(Browser):
         results = []
         for html in [fragile, robust]:
             before = self.measure_html(html)
-            self.page.evaluate(ui_check.STRESS)
-            results.append(ui_check.stress_failures(before, self.page.evaluate(ui_check.PROBE, {"frame": "none"})))
+            self.page.evaluate(ui_antislop.STRESS)
+            results.append(ui_antislop.stress_failures(before, self.page.evaluate(ui_antislop.PROBE, {"frame": "none"})))
         self.assertTrue(results[0])
         self.assertEqual(results[1], [])
 
@@ -256,7 +256,7 @@ class HardNoAndTableTest(Browser):
 class InteractTest(Browser):
     def interact_html(self, html):
         self.measure_html(html)
-        return ui_check.interact(self.page)
+        return ui_antislop.interact(self.page)
 
     def test_invisible_focus(self):
         findings = self.interact_html('<button style="outline:none">Save</button>')
@@ -300,7 +300,7 @@ class InteractTest(Browser):
         self.assertEqual(self.interact_html('<div style="height:1200px"></div><button>Save</button>'), [])
 
     def test_viewport_height(self):
-        ui_check.load(self.page, 'about:blank', 320, 480)
+        ui_antislop.load(self.page, 'about:blank', 320, 480)
         self.assertEqual(self.page.viewport_size, {'width': 320, 'height': 480})
 
 
@@ -363,7 +363,7 @@ class DetailTest(Browser):
         gif = "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7"
         self.page.set_content(f"<img src='{gif}' style='width:200px;height:50px'><img src='{gif}' style='width:60px;height:60px'>")
         self.page.wait_for_load_state("load")
-        found = [f for f in self.page.evaluate(ui_check.PROBE, {"frame": "none"})["findings"] if f["kind"] == "image-distorted"]
+        found = [f for f in self.page.evaluate(ui_antislop.PROBE, {"frame": "none"})["findings"] if f["kind"] == "image-distorted"]
         self.assertEqual(len(found), 1)
         self.assertIn("1 image", found[0]["message"])
 
@@ -403,7 +403,7 @@ class PopupTest(Browser):
     def popup_kinds(self, html):
         self.page.set_viewport_size({"width": 800, "height": 600})
         self.page.set_content(f"<!doctype html><html><head><style>body{{margin:0;font:16px/1.5 Arial,sans-serif}}</style></head><body>{html}</body></html>")
-        return {f["kind"] for f in ui_check.popups(self.page)}
+        return {f["kind"] for f in ui_antislop.popups(self.page)}
 
     def test_menu_cut_off_by_its_card(self):
         html = f"<div style='position:relative;overflow:hidden;width:300px;height:80px;border:1px solid #ddd'>{MENU.format(where='top:40px;left:0;')}</div>"

@@ -16,7 +16,7 @@
     "git-worktree",
     "hooks",
     "no-comments",
-    "ui-check"
+    "ui-antislop"
   ],
   "category": "developer-tools",
   "tags": [

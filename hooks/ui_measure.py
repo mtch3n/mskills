@@ -7,10 +7,10 @@ import sys
 import tempfile
 import urllib.parse
 
-SCRIPTS = pathlib.Path(__file__).resolve().parent.parent / "skills" / "ui-check" / "scripts"
+SCRIPTS = pathlib.Path(__file__).resolve().parent.parent / "skills" / "ui-antislop" / "scripts"
 LINT = SCRIPTS / "slop-lint.py"
-CHECK = SCRIPTS / "ui-check.py"
-PAGES = re.compile(r"^\s*[-*]?\s*ui-check:\s*(\S.*)$")
+CHECK = SCRIPTS / "ui-antislop.py"
+PAGES = re.compile(r"^\s*[-*]?\s*ui-antislop:\s*(\S.*)$")
 DEV_PORTS = [3000, 3001, 5173, 5174, 4321, 4173, 8080, 8000, 5000]
 STYLESHEET = re.compile(r"""<link\b[^>]*href=["']([^"':]+\.css)["']""")
 REFERENCE = re.compile(r"""<(?:link|script|img)\b[^>]*(?:href|src)=["']([^"':#?]+)["']""")

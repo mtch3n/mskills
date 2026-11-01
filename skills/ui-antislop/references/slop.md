@@ -1,7 +1,7 @@
 # Default UI rules
 
 These rules come from the corrections that the user gave most often. The project's own
-design rules win. The tag after a rule is the `ui-check` finding or smell that shows
+design rules win. The tag after a rule is the `ui-antislop` finding or smell that shows
 it.
 
 ## Surfaces

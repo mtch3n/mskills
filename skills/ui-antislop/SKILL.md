@@ -1,5 +1,5 @@
 ---
-name: ui-check
+name: ui-antislop
 description: Measures a rendered web page for misaligned edges, uneven gaps, overflow, overlap, cut-off text, low contrast, small targets and AI-slop patterns, lints UI source for raw colours and slop, and draws a frame over a screenshot. Use when you build, change or review a web UI, before you say a UI change is done, and when the user says a UI looks wrong, "doesn't line up", "looks bad" or "AI slop".
 ---
 
@@ -20,7 +20,7 @@ The scripts are in this skill's base directory. They need `uv`.
 ## 2. Measure
 
 ```bash
-uv run --script <base>/scripts/ui-check.py <page> [<page> ...] --stress --interact
+uv run --script <base>/scripts/ui-antislop.py <page> [<page> ...] --stress --interact
 ```
 
 - A page is a URL or a local HTML file. Give every page that uses the part you

@@ -1,4 +1,4 @@
-# ui-check: why it measures
+# ui-antislop: why it measures
 
 ## The problem
 
@@ -52,7 +52,7 @@ Thus the plugin has three parts:
   nobody asked for.
 - `slop-lint.py` checks the source after each edit. Rules about tokens and slop
   become a test, which stopped one of the loops.
-- `ui-check.py` measures the rendered page. `--variants` finds options that share
+- `ui-antislop.py` measures the rendered page. `--variants` finds options that share
   one layout.
 
 The hooks start the steps when the agent forgets them. In the first eval, the agent
@@ -62,7 +62,7 @@ did not load the skill because it fixed the bug from the CSS alone.
 
 Design QA checklists use this order: layout and hierarchy, type, color, components
 and states, content states, responsive, then a decision for each finding. The
-measurable rules from WCAG 2.2 and the design systems that `ui-check` now uses:
+measurable rules from WCAG 2.2 and the design systems that `ui-antislop` now uses:
 
 | Rule | Limit | Kind | Source |
 |---|---|---|---|
@@ -108,7 +108,7 @@ design-taste-frontend. We read both on 2026-10-31.
 - Both choose a direction and a style, and both review the result with the model
   that reads its own screenshots. Both have source and page detectors for slop.
 - Neither measures the edges of siblings, gaps, table columns, icon centers, clipped
-  text, rows of chips, the differences between pages, or a baseline. `ui-check`
+  text, rows of chips, the differences between pages, or a baseline. `ui-antislop`
   does these.
 - Neither records the user's corrections, and neither stops the agent when it did not
   measure.
@@ -142,7 +142,7 @@ and 44 items, and about 70% of the items were the same. From their lists we adde
 
 Loading states and selected states are not measured yet.
 
-In the third eval run, the agents with the plugin ran `ui-check.py` 2 or 3 times
+In the third eval run, the agents with the plugin ran `ui-antislop.py` 2 or 3 times
 and did not give `--stress` or `--interact`. Thus the skill now gives both options in
 the main command, and the Stop hook asks for them.
 

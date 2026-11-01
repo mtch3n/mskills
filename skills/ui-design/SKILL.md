@@ -10,8 +10,8 @@ agent invented a look with no reference. It showed "options" that were one layou
 three colours. It forgot a rule from an earlier message. It added text, tabs and
 decoration that nobody asked for. Each step below stops one of these causes.
 
-Use the `ui-check` skill to measure the result. This skill is about what to build.
-In the commands, `<ui-check>` is the `ui-check` folder next to this skill's folder.
+Use the `ui-antislop` skill to measure the result. This skill is about what to build.
+In the commands, `<ui-antislop>` is the `ui-antislop` folder next to this skill's folder.
 
 ## 1. Before you design
 
@@ -34,7 +34,7 @@ In the commands, `<ui-check>` is the `ui-check` folder next to this skill's fold
    density, groups or the order of the content. A new colour scheme is not a new
    option.
 2. Measure the options with
-   `uv run --script <ui-check>/scripts/ui-check.py <option pages> --variants`.
+   `uv run --script <ui-antislop>/scripts/ui-antislop.py <option pages> --variants`.
    If two options share one layout, replace one of them.
 3. Show at most 3 options. Give each option one line that tells how it is different.
 4. Open the options where the user can see them, and say where they are. Do not make
@@ -68,15 +68,15 @@ If you think that the screen needs one of these items, ask.
 ## 5. Build
 
 1. Use the project's components and tokens. Run
-   `python3 <ui-check>/scripts/slop-lint.py` after each edit. It reads the lines
+   `python3 <ui-antislop>/scripts/slop-lint.py` after each edit. It reads the lines
    that you added and reports raw colours, arbitrary sizes and slop patterns.
 2. When you change a size, give the old value, the new value and the source of the
    new value: a token, the reference or the user.
 3. If the user approved a mockup, compare the built screen with the mockup before you
    report. Check that each approved part is there and is in the same place.
-4. For a new screen or a redesign, after `ui-check` has no `F` line, start the
+4. For a new screen or a redesign, after `ui-antislop` has no `F` line, start the
    `ui-reviewer` agent. Give it the pages, the user's request and the path to the
-   `ui-check` skill. Fix each problem that it returns, or tell the user why you keep
+   `ui-antislop` skill. Fix each problem that it returns, or tell the user why you keep
    it. Do not start it for a small fix.
 
 ## 6. When the user rejects the result
@@ -89,4 +89,4 @@ If you think that the screen needs one of these items, ask.
 
 ## Default rules
 
-`<ui-check>/references/slop.md` has the user's default rules. The project's rules win.
+`<ui-antislop>/references/slop.md` has the user's default rules. The project's rules win.

@@ -32,7 +32,7 @@ Before running anything, write down:
    would. For a UI that means the running app, not a story or a unit render.
 4. **Look**: only for what has to be seen. Read structure first (DOM, the
    accessibility tree, a layout dump, the response body) and look at a screenshot
-   only for what structure can't tell you. For a web page, run the `ui-check`
+   only for what structure can't tell you. For a web page, run the `ui-antislop`
    script first: it measures alignment, gaps, overflow, overlap and contrast.
 
 Don't run a layer while a cheaper one is still failing.

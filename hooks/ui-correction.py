@@ -19,14 +19,14 @@ CONTEXT = (
     "The user corrects a UI result. Do these steps before you change code:\n"
     "1. Write the correction as a rule in the project's design rules file (DESIGN.md, or the UI section of CLAUDE.md or AGENTS.md). "
     "Use the user's words. If the rule is already there, the last change broke it: say so.\n"
-    "2. Load the `ui-check` skill. Measure the pages before the change with `--out <dir>/before`.\n"
+    "2. Load the `ui-antislop` skill. Measure the pages before the change with `--out <dir>/before`.\n"
     "3. Find every instance of the problem on every page, not only the instance that the user named.\n"
     "4. Change only what the user named. After the change, measure with `--baseline <dir>/before` and undo each change that is not part of the task."
 )
 
 COPY_CONTEXT = (
     "\n5. The correction is about the words. Remove each sentence that does not help the next action or prevent a mistake. "
-    "Do not reword it to keep it. Search every screen for the same kind of text, and check with `ui-check` (`helper-text`, `restates`, `filler`, `long-label`, `chatty`)."
+    "Do not reword it to keep it. Search every screen for the same kind of text, and check with `ui-antislop` (`helper-text`, `restates`, `filler`, `long-label`, `chatty`)."
 )
 
 

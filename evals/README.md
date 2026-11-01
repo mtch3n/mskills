@@ -31,7 +31,7 @@ score, cost, turns, peak context, cache reads and images for each case and arm.
 | `log-triage` | S | dev | Root causes in a 20,000-line log, without reading the whole log |
 | `ship-check-shop` | M | dev | Defects found and fixed, and traps avoided, in a web change |
 | `audit-shop` | L | dev | The same site, all pages and sizes, over a long run |
-| `ui-complaint` | M | dev | A short UI complaint. Checks the named fix, the same bug on a page that the user did not name, the scope and the rules in `DESIGN.md`. Graded with `ui-check`, so it needs `uv`. |
+| `ui-complaint` | M | dev | A short UI complaint. Checks the named fix, the same bug on a page that the user did not name, the scope and the rules in `DESIGN.md`. Graded with `ui-antislop`, so it needs `uv`. |
 | `ui-slop-dashboard` | M | dev | A vague complaint about a dashboard that looks generated. Checks that the slop on the dashboard goes, that the sidebar icons are centred on every page, that the numbers stay, and the rule. Needs `uv`. |
 | `ui-render-only` | M | dev | A UI complaint whose causes show only on the rendered page. Chips sized in `em` differ by context. On a phone, a long link pushes the Copy button out of its box. Checks the fix, the same bug on another page, a longer link, the scope and the rule. Needs `uv`. |
 | `ui-polish` | M | dev | "Polish the Team page" with no defect named. The page has 7 defects that the agent must find. Examples are uneven chips, a hidden Copy button on a phone and no focus style. Checks each fix, the content, the scope and new problems. Needs `uv`. |

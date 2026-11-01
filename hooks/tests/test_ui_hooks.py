@@ -42,10 +42,10 @@ class StopHookTest(unittest.TestCase):
         self.assertEqual(out["decision"], "block")
 
     def test_passes_when_measured_after_the_last_edit(self):
-        self.assertIsNone(self.stop(tool("Edit", file_path=str(self.css)), tool("Bash", command="uv run --script /x/ui-check.py app.html")))
+        self.assertIsNone(self.stop(tool("Edit", file_path=str(self.css)), tool("Bash", command="uv run --script /x/ui-antislop.py app.html")))
 
     def test_blocks_when_edited_again_after_the_measurement(self):
-        out = self.stop(tool("Edit", file_path=str(self.css)), tool("Bash", command="uv run --script /x/ui-check.py a.html"), tool("Write", file_path=str(self.css)))
+        out = self.stop(tool("Edit", file_path=str(self.css)), tool("Bash", command="uv run --script /x/ui-antislop.py a.html"), tool("Write", file_path=str(self.css)))
         self.assertEqual(out["decision"], "block")
 
     def test_passes_for_reads_non_ui_files_and_old_files(self):
