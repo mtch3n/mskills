@@ -2,7 +2,7 @@
   "name": "mskills",
   "displayName": "mskills",
   "version": "0.1.0",
-  "description": "MTChen's personal agent skills: worktrees in .claude/worktrees with a guard hook, and no code comments.",
+  "description": "MTChen's personal agent skills: worktrees with a guard hook, no code comments, ship checks, token cost, STE writing, session recall, UI measurement and UI design rules.",
   "author": {
     "name": "MTChen",
     "url": "https://github.com/mtch3n"
@@ -15,7 +15,8 @@
     "skills",
     "git-worktree",
     "hooks",
-    "no-comments"
+    "no-comments",
+    "ui-check"
   ],
   "category": "developer-tools",
   "tags": [

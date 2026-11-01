@@ -95,6 +95,59 @@ def claude(prompt, cwd, model, max_turns, timeout, plugin_dir=None):
         return {"is_error": True, "result": done.stdout[-2000:], "error": done.stderr[-2000:]}
 
 
+def codex_home(plugin_dir):
+    real = pathlib.Path(os.environ.get("CODEX_HOME", pathlib.Path.home() / ".codex"))
+    home = pathlib.Path(tempfile.mkdtemp(prefix="mskills-eval-codex-"))
+    for name in ["auth.json", "config.toml"]:
+        if (real / name).exists():
+            (home / name).symlink_to(real / name)
+    (home / "skills").mkdir()
+    if (real / "skills" / ".system").exists():
+        (home / "skills" / ".system").symlink_to(real / "skills" / ".system")
+    if plugin_dir:
+        for skill in sorted((plugin_dir / "skills").iterdir()):
+            if (skill / "SKILL.md").exists():
+                (home / "skills" / skill.name).symlink_to(skill)
+    return home
+
+
+def codex(prompt, cwd, model, timeout, plugin_dir=None):
+    home = codex_home(plugin_dir)
+    last = home / "last-message.md"
+    uv_cache = pathlib.Path(os.environ.get("UV_CACHE_DIR", pathlib.Path.home() / ".cache" / "uv"))
+    command = ["codex", "exec", "--json", "--skip-git-repo-check", "-s", "workspace-write", "-c", "sandbox_workspace_write.network_access=true", "--add-dir", str(uv_cache), "-C", str(cwd), "-o", str(last)]
+    if model:
+        command += ["-m", model]
+    command.append(prompt)
+    env = {**os.environ, "CODEX_HOME": str(home), "EVAL_PORT": str(free_port())}
+    try:
+        done = subprocess.run(command, cwd=cwd, capture_output=True, text=True, timeout=timeout, env=env)
+    except subprocess.TimeoutExpired:
+        return {"is_error": True, "result": "", "error": f"timeout after {timeout}s"}, []
+    events = []
+    for line in done.stdout.splitlines():
+        try:
+            events.append(json.loads(line))
+        except json.JSONDecodeError:
+            continue
+    usage = {}
+    for event in events:
+        for key, value in (event.get("usage") or {}).items():
+            if isinstance(value, (int, float)):
+                usage[key] = usage.get(key, 0) + value
+    commands = [e["item"] for e in events if e.get("type") == "item.completed" and (e.get("item") or {}).get("type") == "command_execution"]
+    failed = done.returncode != 0 and not last.exists()
+    reply = {
+        "is_error": failed,
+        "error": done.stderr[-2000:] if failed else None,
+        "result": last.read_text() if last.exists() else "",
+        "num_turns": len(commands),
+        "total_cost_usd": 0,
+        "usage": usage,
+    }
+    return reply, [{"name": "Bash", "input": {"command": c.get("command", "")}} for c in commands]
+
+
 def judge(criteria, evidence):
     listed = "\n".join(f"- {name}: {text}" for name, text in criteria.items())
     prompt = (
@@ -149,7 +202,7 @@ class Run:
         return verdicts
 
 
-def run_one(case_dir, case, arm_name, plugin_dir, index, out_root, model):
+def run_one(case_dir, case, arm_name, agent, plugin_dir, index, out_root, model):
     out = out_root / case_dir.name / arm_name / str(index)
     out.mkdir(parents=True, exist_ok=True)
     workdir = pathlib.Path(tempfile.mkdtemp(prefix=f"mskills-eval-{case_dir.name}-{arm_name}-"))
@@ -163,7 +216,11 @@ def run_one(case_dir, case, arm_name, plugin_dir, index, out_root, model):
     subprocess.run(["git", "add", "-A"], cwd=workdir)
     subprocess.run(["git", "-c", "user.name=eval", "-c", "user.email=eval@example.com", "commit", "-q", "-m", "fixture"], cwd=workdir)
     started = datetime.datetime.now()
-    reply = claude(case["prompt"], workdir, case.get("model", model), case.get("max_turns", 30), case.get("timeout", 900), plugin_dir)
+    codex_calls = None
+    if agent == "codex":
+        reply, codex_calls = codex(case["prompt"], workdir, None, case.get("timeout", 900), plugin_dir)
+    else:
+        reply = claude(case["prompt"], workdir, case.get("model", model), case.get("max_turns", 30), case.get("timeout", 900), plugin_dir)
     seconds = (datetime.datetime.now() - started).total_seconds()
     stop_leftovers(workdir, workdir.name)
     session_id = reply.get("session_id")
@@ -172,9 +229,13 @@ def run_one(case_dir, case, arm_name, plugin_dir, index, out_root, model):
     (out / "final.md").write_text(final)
     if transcript.exists():
         shutil.copy(transcript, out / "transcript.jsonl")
+    if codex_calls is not None:
+        (out / "calls.json").write_text(json.dumps(codex_calls, indent=1))
     diff = subprocess.run(["git", "diff", "HEAD"], cwd=workdir, capture_output=True, text=True).stdout
     (out / "diff.patch").write_text(diff)
     run = Run(workdir, transcript, final)
+    if codex_calls is not None:
+        run.calls = codex_calls
     run.diff = diff
     grader = load_module(case_dir / "grade.py", f"grade_{case_dir.name}")
     grades = grader.grade(run)
@@ -197,6 +258,8 @@ def run_one(case_dir, case, arm_name, plugin_dir, index, out_root, model):
         "seconds": round(seconds),
         "error": reply.get("error") if reply.get("is_error") else None,
         "cost": cost,
+        "agent": agent,
+        "usage": reply.get("usage", {}),
         "workdir": str(workdir),
     }
     (out / "result.json").write_text(json.dumps(result, indent=2))
@@ -223,8 +286,11 @@ def regrade(folder):
 
 
 def parse_arm(text):
-    name, _, path = text.partition("=")
-    return name, (pathlib.Path(path).resolve() if path else None)
+    name, _, spec = text.partition("=")
+    agent = "claude"
+    if spec == "codex" or spec.startswith("codex:"):
+        agent, _, spec = spec.partition(":")
+    return name, agent, (pathlib.Path(spec).resolve() if spec else None)
 
 
 def summarize(results):
@@ -254,7 +320,7 @@ def main():
     global EVAL_CONFIG
     EVAL_CONFIG = eval_config_dir()
     parser = argparse.ArgumentParser(description="Run mskills eval cases with and without the plugin.")
-    parser.add_argument("--arm", action="append", help="NAME for no plugin, or NAME=PLUGIN_DIR")
+    parser.add_argument("--arm", action="append", help="NAME, NAME=PLUGIN_DIR, NAME=codex or NAME=codex:PLUGIN_DIR")
     parser.add_argument("--regrade", type=pathlib.Path, help="grade an earlier results folder again")
     parser.add_argument("--case", action="append", help="case folder name; default all in the chosen set")
     parser.add_argument("--set", default="dev", choices=["dev", "holdout", "all"])
@@ -290,9 +356,9 @@ def main():
     with concurrent.futures.ThreadPoolExecutor(max_workers=args.jobs) as pool:
         for case_dir, case in cases:
             for arm in args.arm:
-                name, plugin_dir = parse_arm(arm)
+                name, agent, plugin_dir = parse_arm(arm)
                 for index in range(args.runs or case.get("runs", 2)):
-                    jobs.append(pool.submit(run_one, case_dir, case, name, plugin_dir, index, out_root, args.model))
+                    jobs.append(pool.submit(run_one, case_dir, case, name, agent, plugin_dir, index, out_root, args.model))
         results = []
         for job in concurrent.futures.as_completed(jobs):
             result = job.result()

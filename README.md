@@ -14,6 +14,8 @@ plugin that ships them with a hook.
 | [`ship-check`](skills/ship-check/SKILL.md) | How to check a change before it ships: what has to be true, layers from static checks to a real look, trustworthy before-and-after evidence, and a report of what was checked, fixed, left and never tried. |
 | [`ste100`](skills/ste100/SKILL.md) | Writes English in ASD-STE100 Simplified Technical English and rewrites dense or ambiguous English into it, with a checker for the measurable rules. |
 | [`cost-aware`](skills/cost-aware/SKILL.md) | How an agent keeps token cost down: big things stay out of the main context, fewer turns, less work, and the right worker for each job. |
+| [`ui-check`](skills/ui-check/SKILL.md) | Measures a rendered web page for alignment, gaps, overflow, clipped text, contrast, focus and AI-slop patterns. It also lints UI source for raw colours and slop. Default UI rules are in [`references/slop.md`](skills/ui-check/references/slop.md). Needs `uv`. |
+| [`ui-design`](skills/ui-design/SKILL.md) | How to design or redesign a screen without long correction loops. Get a reference, make options that differ in structure, and add nothing that nobody asked for. |
 
 ## Agents
 
@@ -21,13 +23,18 @@ plugin that ships them with a hook.
 |---|---|---|
 | [`comment-reviewer`](agents/comment-reviewer.md) | inherits | Applies `no-comments` to a diff or files: removes the comments, writes their reasons into the docs, suggests renames. |
 | [`session-reader`](agents/session-reader.md) | Sonnet | Reads past sessions for `recall` and returns one task's claims, marked as said by the user or the agent. |
+| [`ui-reviewer`](agents/ui-reviewer.md) | Sonnet | Reviews a rendered screen for what measurement cannot find: hierarchy, the primary action, words that do not help, structure and the project's rules. Does not change files. |
 
-## Hook
+## Hooks
 
-[`hooks/worktree-guard.py`](hooks/worktree-guard.py) is a `PreToolUse` hook on `Bash`
-that denies `git worktree add` and `git worktree move` to any path other than
-`<main-repo>/.claude/worktrees/<name>`. How it works:
-[`docs/worktree-guard.md`](docs/worktree-guard.md). Needs `python3` and `git`.
+| Hook | Event | What it does |
+|---|---|---|
+| [`worktree-guard.py`](hooks/worktree-guard.py) | `PreToolUse` on `Bash` | Denies `git worktree add` and `git worktree move` to any path other than `<main-repo>/.claude/worktrees/<name>`. How it works: [`docs/worktree-guard.md`](docs/worktree-guard.md). Needs `git`. |
+| [`ui-correction.py`](hooks/ui-correction.py) | `UserPromptSubmit` | When the user's message corrects a UI, tells the agent to write the rule in the rules file and to measure before and after. |
+| [`ui-lint.py`](hooks/ui-lint.py) | `PostToolUse` on edits | Runs `slop-lint` on the lines that the agent just wrote to a UI file and gives it the findings. |
+| [`ui-stop.py`](hooks/ui-stop.py) | `Stop` | When the agent changed UI files, finds the pages that use them and measures them with `ui-check --stress --interact`. Gives the agent the problems to fix, up to 3 times while a fail stays. |
+
+All hooks need `python3`.
 
 ## Install
 
@@ -40,9 +47,10 @@ claude plugin install mskills@mskills
 
 Then run `/reload-plugins` in an open session, or start a new one. Skills appear as
 `/mskills:worktrees`, `/mskills:no-comments`, `/mskills:recall`, `/mskills:ship-check`,
-`/mskills:cost-aware` and `/mskills:ste100`; the hook runs on every Bash call.
+`/mskills:cost-aware`, `/mskills:ste100`, `/mskills:ui-check` and `/mskills:ui-design`. The hooks start
+automatically.
 
-Other agents (skills only, no hook):
+Other agents (skills only, no hooks):
 
 ```bash
 npx skills add mtch3n/mskills

@@ -1,0 +1,8 @@
+{
+  "tier": "M",
+  "set": "dev",
+  "runs": 2,
+  "max_turns": 60,
+  "timeout": 1800,
+  "prompt": "We ship the Team page tomorrow. Polish it."
+}

@@ -1,0 +1,81 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Files</title>
+<style>
+  * { box-sizing: border-box; }
+  body { margin: 0; font: 16px/1.5 Arial, sans-serif; color: #1f2937; background: #ffffff; }
+  main { max-width: 1120px; margin: 0 auto; padding: 24px; }
+  h1 { margin: 0 0 16px; font-size: 32px; line-height: 40px; }
+  .gradient-title { background: linear-gradient(90deg, #7c3aed, #ec4899); -webkit-background-clip: text; background-clip: text; color: transparent; }
+  .lead { margin: 0 0 24px 2px; }
+  .toolbar { display: flex; gap: 8px; margin-bottom: 24px; }
+  .toolbar input { height: 38px; width: 240px; border: 1px solid #d1d5db; border-radius: 6px; padding: 0 12px; font: inherit; }
+  .btn { height: 40px; border: 0; border-radius: 6px; font: inherit; color: #ffffff; background: linear-gradient(135deg, #6366f1, #8b5cf6); padding: 0 14px 0 18px; display: inline-flex; align-items: center; justify-content: center; gap: 8px; box-shadow: 0 0 32px rgba(139, 92, 246, 0.6); }
+  .btn svg { width: 16px; height: 16px; position: relative; top: 3px; }
+  .stack > * { margin: 0; padding: 12px 16px; border: 1px solid #e5e7eb; border-radius: 8px; }
+  .stack > * + * { margin-top: 16px; }
+  .stack > .tight { margin-top: 12px; }
+  .glass { margin-top: 24px; padding: 16px; border-radius: 16px; background: rgba(255, 255, 255, 0.4); backdrop-filter: blur(12px); border: 1px solid #e5e7eb; }
+  .glass .inner { padding: 12px; border-radius: 12px; border: 1px solid #e5e7eb; background: #f9fafb; }
+  .pills { display: flex; gap: 6px; margin-top: 16px; flex-wrap: wrap; }
+  .pill { border-radius: 999px; padding: 2px 10px; font-size: 12px; background: #ede9fe; color: #5b21b6; }
+  table { margin-top: 24px; border-collapse: collapse; width: 100%; }
+  th { text-align: left; padding: 8px 16px; font-size: 14px; border-bottom: 1px solid #e5e7eb; }
+  td { text-align: left; padding: 8px 12px; border-bottom: 1px solid #f3f4f6; }
+  th.actions { text-align: center; }
+  td.actions { text-align: right; }
+  .wide { margin-top: 24px; width: 420px; padding: 12px; border: 1px solid #e5e7eb; }
+  .clip { margin-top: 24px; height: 48px; overflow: hidden; width: 200px; border: 1px solid #e5e7eb; padding: 8px; }
+  .overlap-a { margin: 24px 0 0; font-size: 20px; }
+  .overlap-b { margin: -20px 0 0; font-size: 14px; }
+  .low { color: #9ca3af; background: #ffffff; font-size: 13px; }
+  .eyebrow { margin: 0 0 8px; font-size: 12px; letter-spacing: 1px; text-transform: uppercase; color: #6b7280; }
+  .alert { margin-top: 24px; padding: 12px 16px; background: #fef3c7; border-left: 4px solid #f59e0b; border-radius: 6px; }
+  h2 { margin: 24px 0 4px; font-size: 20px; }
+  .help { margin: 0; font-size: 14px; color: #6b7280; }
+</style>
+</head>
+<body>
+<main>
+  <p class="eyebrow">Files</p>
+  <h1 class="gradient-title">🚀 Unlock seamless file sharing</h1>
+  <p class="lead">Elevate your workflow with cutting-edge transfers.</p>
+  <div class="toolbar">
+    <input placeholder="Search files">
+    <button class="btn" title="Upload a file"><svg viewBox="0 0 16 16"><rect width="16" height="16" fill="#ffffff"/></svg>Upload</button>
+  </div>
+  <div class="stack">
+    <p>Report-2026.pdf</p>
+    <p>Invoices.zip</p>
+    <p class="tight">Contract.docx</p>
+    <p>Notes.txt</p>
+  </div>
+  <h2>Recent files</h2>
+  <p class="help">Here are the files you uploaded in the last week.</p>
+  <div class="alert">Your plan ends in 3 days.</div>
+  <h2>Shared with you</h2>
+  <p class="help">These are the files that other people shared with you.</p>
+  <div class="glass">
+    <div class="inner">✨ Storage almost full</div>
+  </div>
+  <div class="pills">
+    <span class="pill">New</span><span class="pill">Beta</span><span class="pill">Pro</span><span class="pill">Fast</span><span class="pill">Secure</span><span class="pill">AI</span>
+  </div>
+  <table>
+    <thead><tr><th>Name</th><th>Size</th><th class="actions">Actions</th></tr></thead>
+    <tbody>
+      <tr><td>Report-2026.pdf</td><td>2.1 MB</td><td class="actions"><a href="#">Share</a></td></tr>
+      <tr><td>Invoices.zip</td><td>14 MB</td><td class="actions"><a href="#">Share</a></td></tr>
+    </tbody>
+  </table>
+  <div class="wide">This summary panel has a fixed width and does not fit a phone screen.</div>
+  <div class="clip">A long description that is cut off by the fixed height of its box so the last lines never show.</div>
+  <p class="overlap-a">Shared with 3 people</p>
+  <p class="overlap-b">Last change 2 hours ago</p>
+  <p class="low">Files are kept for 30 days.</p>
+</main>
+</body>
+</html>

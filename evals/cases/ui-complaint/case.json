@@ -1,0 +1,8 @@
+{
+  "tier": "M",
+  "set": "dev",
+  "runs": 2,
+  "max_turns": 60,
+  "timeout": 1800,
+  "prompt": "On the Files page the table headers don't line up with the rows. And Settings has a box inside a box, looks bad. Fix it."
+}

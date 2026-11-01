@@ -1,0 +1,8 @@
+{
+  "tier": "M",
+  "set": "dev",
+  "runs": 2,
+  "max_turns": 60,
+  "timeout": 1800,
+  "prompt": "The dashboard looks AI-generated and something in the sidebar looks off. Clean it up."
+}

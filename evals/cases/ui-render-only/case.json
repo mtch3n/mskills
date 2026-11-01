@@ -1,0 +1,8 @@
+{
+  "tier": "M",
+  "set": "dev",
+  "runs": 2,
+  "max_turns": 60,
+  "timeout": 1800,
+  "prompt": "On the Team page the role chips look uneven, and on my phone the Copy button in the invite box is gone. Fix it."
+}

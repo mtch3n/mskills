@@ -9,7 +9,7 @@
     {
       "name": "mskills",
       "source": "./",
-      "description": "Worktrees in .claude/worktrees with a guard hook, and no code comments.",
+      "description": "Worktrees with a guard hook, no code comments, ship checks, token cost, STE writing, session recall, UI measurement and UI design rules.",
       "version": "0.1.0"
     }
   ]
