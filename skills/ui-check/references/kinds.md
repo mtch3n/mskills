@@ -5,16 +5,16 @@
 | Line | Kinds | What to do |
 |---|---|---|
 | `F` fail | `overflow-x`, `clipped`, `overlap`, `control-cut`, `covered-end` | Fix it. A fail is always a defect. Do not report the work as done while a fail stays. |
-| `F` fail | `broken-image`, `image-distorted`, `contrast` below 3:1 | Fix it. |
+| `F` fail | `broken-image`, `image-distorted`, `contrast` below the WCAG AA ratio | Fix it. |
 | `F` fail | From `--interact`: `focus-invisible`, `focus-clipped`, `focus-covered`, `popup-clipped`, `popup-covered`, `dialog-unreachable` | Fix it. |
 | `W` layout | `edge`, `gap`, `row-height`, `row-top`, `row-bottom`, `row-centre`, `icon-centre`, `baseline`, `off-centre`, `sticks-out`, `proximity`, `choice-centre`, `orphan-wrap` | Fix it, or write in the report why it is correct. A gap of 1 to 4 px is almost never correct. |
 | `W` components | `inconsistent`, `scale`, `drift`, `off-token`, `double-border`, `cramped-padding`, `control-font`, `target-size` | Fix it, or give the reason. |
-| `W` text | `contrast`, `line-length`, `small-text`, `headings`, `truncated`, `early-ellipsis`, `long-label` | Fix it, or give the reason. |
-| `W` words | `restates`, `helper-text`, `chatty`, `text-heavy`, `wall-of-text`, `long-paragraph` | Remove the text. Do not write it again in other words. |
+| `W` text | `line-length`, `small-text`, `headings`, `truncated`, `early-ellipsis`, `long-label` | Fix it, or give the reason. |
+| `W` words | `restates`, `chatty`, `text-heavy`, `wall-of-text`, `long-paragraph` | Remove the text. Do not write it again in other words. |
 | `W` tables | `table-column`, `numeric-align`, `empty-cell`, `long-table` | Fix it, or give the reason. |
 | `W` cursor | `cursor-lie`, `cursor-mixed` | Fix it, or give the reason. |
 | `W` motion | From `--interact`: `focus-shift`, `hover-shift` | Fix it, or give the reason. |
-| `S` smell | `card-in-card`, `tinted-box`, `accent-stripe`, `eyebrow`, `subtitles`, `pills`, `border-shadow`, `icon-tile`, `card-grid` | Compare it with the rules. Remove it if no rule asks for it. |
+| `S` smell | `card-in-card`, `tinted-box`, `accent-stripe`, `eyebrow`, `subtitles`, `pills`, `border-shadow`, `icon-tile`, `card-grid`, `helper-text` | Compare it with the rules. Remove it if no rule asks for it. |
 | `S` smell | `gradient`, `gradient-text`, `glow`, `glass`, `purple`, `emoji`, `hues`, `icon-sets`, `native-tooltip`, `stock-copy`, `filler`, `cursor-zoo` | Compare it with the rules. Remove it if no rule asks for it. |
 
 
@@ -42,13 +42,20 @@ the page uses. Many different values for one property show drift.
 
 ## Hooks in Claude Code
 
+- If the user asks for an open task on a page, for example "polish the Team page",
+  a hook measures the page with `--interact` before you start. It finds the page from
+  its name in the message or from the `ui-check:` line in `DESIGN.md`. It gives you
+  the problems that are already on the page. Fix them in the same pass.
 - After each edit of a UI file, a hook runs `slop-lint` on the lines that you wrote.
 - When you stop after you changed UI files, a hook finds the pages that use the
   files and measures them with `--stress --interact`. It finds the pages from a
   `ui-check: <url or file> ...` line in `DESIGN.md`, from the HTML files that use the
   changed files, or from a dev server on this computer and the routes of the changed
-  files. It gives you the problems to fix. It does this up to 3 times while a fail
-  stays.
+  files. On a page that only uses a changed style, it shows only the fails. It gives
+  you the problems to fix. It does this up to 3 times for each user message. If it
+  cannot measure a page, it tells you.
+- The text after `@` in a finding is the CSS rule that sets the value, with its file
+  and line.
 - When the user's message corrects a UI, a hook tells you to write the rule in the
   rules file.
 

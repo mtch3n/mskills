@@ -31,8 +31,9 @@ plugin that ships them with a hook.
 |---|---|---|
 | [`worktree-guard.py`](hooks/worktree-guard.py) | `PreToolUse` on `Bash` | Denies `git worktree add` and `git worktree move` to any path other than `<main-repo>/.claude/worktrees/<name>`. How it works: [`docs/worktree-guard.md`](docs/worktree-guard.md). Needs `git`. |
 | [`ui-correction.py`](hooks/ui-correction.py) | `UserPromptSubmit` | When the user's message corrects a UI, tells the agent to write the rule in the rules file and to measure before and after. |
+| [`ui-baseline.py`](hooks/ui-baseline.py) | `UserPromptSubmit` | When the user asks for an open task on a page, such as "polish the Team page", measures the page before the work and gives the agent the problems that are already there, with the CSS rule of each. |
 | [`ui-lint.py`](hooks/ui-lint.py) | `PostToolUse` on edits | Runs `slop-lint` on the lines that the agent just wrote to a UI file and gives it the findings. |
-| [`ui-stop.py`](hooks/ui-stop.py) | `Stop` | When the agent changed UI files, finds the pages that use them and measures them with `ui-check --stress --interact`. Gives the agent the problems to fix, up to 3 times while a fail stays. |
+| [`ui-stop.py`](hooks/ui-stop.py) | `Stop` | When the agent changed UI files, finds the pages that use them and measures them with `ui-check --stress --interact`. Gives the agent the problems to fix, up to 3 times for each user message. On a page that only shares a changed style, it shows only the fails. |
 
 All hooks need `python3`.
 

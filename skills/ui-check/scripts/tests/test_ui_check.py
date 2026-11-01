@@ -10,8 +10,8 @@ spec = importlib.util.spec_from_file_location("ui_check", SCRIPT)
 ui_check = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(ui_check)
 
-DEFECT_FINDINGS = {"overflow-x", "clipped", "overlap", "edge", "row-height", "icon-centre", "gap", "off-centre", "table-column", "contrast", "drift", "numeric-align", "helper-text", "proximity"}
-DEFECT_SMELLS = {"gradient-text", "gradient", "glass", "glow", "purple", "emoji", "card-in-card", "tinted-box", "accent-stripe", "pills", "eyebrow", "subtitles", "native-tooltip", "hues", "stock-copy"}
+DEFECT_FINDINGS = {"overflow-x", "clipped", "overlap", "edge", "row-height", "icon-centre", "gap", "off-centre", "table-column", "contrast", "drift", "numeric-align", "proximity"}
+DEFECT_SMELLS = {"gradient-text", "gradient", "glass", "glow", "purple", "emoji", "card-in-card", "tinted-box", "accent-stripe", "pills", "eyebrow", "subtitles", "native-tooltip", "hues", "stock-copy", "helper-text"}
 
 
 class Browser(unittest.TestCase):
@@ -314,13 +314,18 @@ class CopyTest(Browser):
 
     def test_helper_sentence_in_an_app(self):
         html = "<table><tr><td>x</td></tr></table><h2 style='font-size:20px'>Upload</h2><p style='margin:4px 0;font-size:14px;color:#777'>Share files with expiry, download limits and a password.</p>"
-        self.assertIn("helper-text", kinds(self.measure_html(html)))
+        self.assertIn("helper-text", smells(self.measure_html(html)))
+
+    def test_alerts_and_sticky_headers_are_not_smells(self):
+        report = self.measure_html("<header style='position:sticky;top:0;backdrop-filter:blur(8px);height:56px'>Files</header><div role='alert' style='background:#fde8e8;border:1px solid #f5b5b5;padding:16px;width:300px;height:60px'>Upload failed. Try again.</div>")
+        self.assertNotIn("glass", smells(report))
+        self.assertNotIn("tinted-box", smells(report))
 
     def test_long_button_label_and_filler(self):
         report = self.measure_html("<p>Just to confirm: here you can simply upload.</p><button>Click here to save all your changes</button>")
         self.assertIn("long-label", kinds(report))
         self.assertIn("filler", smells(report))
-        self.assertNotIn("long-label", kinds(self.measure_html("<button>Save</button>")))
+        self.assertNotIn("long-label", kinds(self.measure_html("<button>Save</button><button>Send password reset email</button>")))
 
     def test_long_paragraph_and_text_book_page(self):
         page = "".join(f"<h2>Part {k}</h2><p style='max-width:700px'>{LONG}</p>" for k in range(12))

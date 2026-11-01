@@ -68,6 +68,21 @@ class StopHookTest(unittest.TestCase):
         (self.dir / "index.html").write_text("<!doctype html><html lang='en'><head><meta name='viewport' content='width=device-width'><title>a</title><link rel='stylesheet' href='app.css'></head><body><main><h1>Files</h1><p>Two files.</p></main></body></html>")
         self.assertIsNone(self.stop(tool("Edit", file_path=str(self.css))))
 
+    def test_a_page_that_only_shares_the_style_gets_only_fails(self):
+        self.css.write_text("p { font: 10px/1.5 Arial, sans-serif; margin: 0; }\n")
+        (self.dir / "index.html").write_text("<!doctype html><html lang='en'><head><meta name='viewport' content='width=device-width'><title>a</title><link rel='stylesheet' href='app.css'></head><body><main><h1>Files</h1><p>Two files.</p></main></body></html>")
+        self.assertIsNone(self.stop(tool("Edit", file_path=str(self.css))))
+
+    def test_rounds_start_again_for_a_new_prompt(self):
+        self.css.write_text(".wide { width: 900px; height: 20px; }\n")
+        (self.dir / "index.html").write_text("<!doctype html><html><head><meta name='viewport' content='width=device-width'><link rel='stylesheet' href='app.css'></head><body><div class='wide'></div></body></html>")
+        for _ in range(3):
+            self.stop(tool("Edit", file_path=str(self.css)))
+            self.css.write_text(self.css.read_text() + "\n")
+        self.assertIsNone(self.stop(tool("Edit", file_path=str(self.css))))
+        prompt = {"type": "user", "uuid": "p2", "timestamp": self.start["timestamp"], "message": {"content": "now fix the header"}}
+        self.assertEqual(self.stop(prompt, tool("Edit", file_path=str(self.css)))["decision"], "block")
+
     def test_skips_test_fixtures(self):
         fixture = self.dir / "tests" / "pages" / "defects.css"
         fixture.parent.mkdir(parents=True)
@@ -76,6 +91,26 @@ class StopHookTest(unittest.TestCase):
 
     def test_does_not_block_twice(self):
         self.assertIsNone(self.stop(tool("Edit", file_path=str(self.css)), active=True))
+
+
+class BaselineHookTest(unittest.TestCase):
+    def test_measures_the_named_page_before_the_work(self):
+        folder = pathlib.Path(tempfile.mkdtemp())
+        (folder / "app.css").write_text(".wide { width: 900px; height: 20px; } button:focus { outline: none; }\n")
+        (folder / "team.html").write_text("<!doctype html><html lang='en'><head><meta name='viewport' content='width=device-width'><title>t</title><link rel='stylesheet' href='app.css'></head><body><main><h1>Team</h1><div class='wide'></div></main></body></html>")
+        (folder / "other.html").write_text("<!doctype html><html><body>x</body></html>")
+        out = hook("ui-baseline.py", {"prompt": "We ship the Team page tomorrow. Polish it.", "cwd": str(folder), "session_id": f"b-{folder.name}"})
+        context = out["hookSpecificOutput"]["additionalContext"]
+        self.assertIn("team.html @ 390px overflow-x", context)
+        self.assertNotIn("other.html", context)
+        self.assertIn("focus-removed", context)
+        self.assertIn("app.css:1 .wide", context)
+
+    def test_skips_named_bugs_and_agent_messages(self):
+        folder = pathlib.Path(tempfile.mkdtemp())
+        (folder / "team.html").write_text("<p>x</p>")
+        for prompt in ["the Copy button on the team page is cut off", "<agent-message>polish the team page</agent-message>", "polish the release notes"]:
+            self.assertIsNone(hook("ui-baseline.py", {"prompt": prompt, "cwd": str(folder), "session_id": "s"}), prompt)
 
 
 class LintHookTest(unittest.TestCase):
@@ -116,6 +151,10 @@ class CorrectionHookTest(unittest.TestCase):
         for prompt in ["too verbose", "remove this text, not useful", "the page reads like a text book"]:
             self.assertIn("about the words", self.context(prompt) or "", prompt)
         self.assertNotIn("about the words", self.context("the table headers still don't line up"))
+
+    def test_ignores_messages_from_other_agents(self):
+        report = 'Another Claude session sent a message:\n<agent-message from="a1">[Subagent hand-back] the Copy button is cut off and the table headers do not line up</agent-message>'
+        self.assertIsNone(self.context(report))
 
     def test_ignores_other_prompts(self):
         for prompt in ["run the eval with claude code", "add a page to the docs", "don't commit yet", "the test still fails"]:

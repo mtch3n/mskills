@@ -29,6 +29,7 @@ RULES = [
     ("purple", UI, re.compile(r"\b[a-z]+-(?:indigo|violet|purple)-\d{2,3}\b|#(?:6366f1|4f46e5|8b5cf6|7c3aed|a855f7|9333ea|6d28d9)\b", re.I), "stock violet or indigo accent"),
     ("emoji", MARKUP, re.compile("[\U0001F300-\U0001FAFF☀-⛿✀-➿]"), "emoji in UI text"),
     ("native-tooltip", MARKUP, re.compile(r"<[a-z][\w-]*\b[^<>]*\stitle\s*="), "browser title tooltip; use the library tooltip"),
+    ("focus-removed", UI, re.compile(r"(?<![\w-])outline\s*:\s*(?:none|0)\b|(?<![\w:-])(?:focus:)?outline-none\b(?!.*\b(?:focus-visible:|focus:)(?:ring|outline|border|shadow))"), "focus outline removed with no other focus style; keep a visible :focus-visible style"),
     ("stock-copy", MARKUP, re.compile(r"\b(?:seamless(?:ly)?|supercharge|effortless(?:ly)?|empower|game-?chang\w*|cutting-edge|next-level|revolutioni[sz]e|world-class|unleash|skyrocket|best-in-class|all-in-one|blazing(?:ly)? fast|level up)\b", re.I), "marketing word"),
 ]
 
@@ -118,6 +119,8 @@ def check_line(path, text, ui=None):
     if ui and suffix in COMPONENT_MARKUP:
         found += native_elements(text, ui)
     for kind, exts, pattern, message in RULES:
+        if kind == "focus-removed" and re.search(r"focus-visible|box-shadow|\bring\b|border-color", text):
+            continue
         if suffix not in exts or (kind == "glass" and "inset-0" in text) or (kind == "accent-stripe" and "blockquote" in text):
             continue
         subject = text

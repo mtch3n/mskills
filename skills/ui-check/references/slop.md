@@ -9,8 +9,8 @@ it.
 - Do not put a card inside a card. `card-in-card`
 - Do not put a card around one item, one line or one control.
 - Do not put a colored stripe on one side of a box. `accent-stripe`
-- Do not give a box a colored fill and a border. Show a status or a warning as plain
-  text, or as an icon and text. `tinted-box`
+- Do not give a box a colored fill and a border. An alert or a status message with
+  `role="alert"` or `role="status"` can have them. `tinted-box`
 - Show an empty state as one muted line.
 - Use space and a heading to make a group. Do not add a box only to make a group.
 - Do not give a box a full border and a wide shadow. `border-shadow`
@@ -25,7 +25,8 @@ it.
   `off-token`, `drift`
 - Do not tint a surface with the primary color.
 - Do not use a gradient, a glow or a blurred see-through surface if the design does
-  not ask for it. `gradient`, `gradient-text`, `glow`, `glass`
+  not ask for it. A sticky header and the backdrop of a dialog can have a blur.
+  `gradient`, `gradient-text`, `glow`, `glass`
 - Do not use the stock violet or indigo accent if it is not the brand color.
   `purple`
 - Use few hues: neutrals, one accent and the status colors. `hues`
@@ -33,8 +34,9 @@ it.
 ## Text
 
 - Do not put a small upper-case label above a heading. `eyebrow`
-- Do not put a helper sentence under each heading. Make the UI explain itself.
-  `subtitles`
+- Do not put a helper sentence under each heading. Make the UI explain itself. Keep
+  a sentence only if it helps the next action or prevents a mistake, for example a
+  sentence about cost or access. `subtitles`, `helper-text`
 - Do not add a legend if an icon and a label already tell the same thing.
 - Do not use emoji in UI text. `emoji`
 - Do not use marketing words, for example "seamless", "unlock" or "elevate".
@@ -42,10 +44,10 @@ it.
 - Do not add hints, "demo data" banners, "updated just now" or success text that
   stays.
 - Do not put a sentence under a heading that tells again what the heading tells.
-  `restates`, `helper-text`
+  `restates`
 - Do not use filler, for example "Just to confirm", "Here you can" or "Simply".
   `filler`
-- Use 3 words or fewer on a button, 4 or fewer on a tab, 3 or fewer in a table
+- Use 4 words or fewer on a button, 4 or fewer on a tab, 5 or fewer in a table
   header. `long-label`
 - Keep paragraphs to 60 words or fewer. A website is not a text book: put a
   picture, a control or a table between long parts of text. `long-paragraph`,
@@ -88,8 +90,8 @@ it.
 - Make each click target 24 × 24 px or larger, or keep other targets away from it.
   `target-size`
 - Show a single action in a row as a button, not as a link.
-- Show the pointer cursor only on items that the user can click, and use one cursor
-  for all buttons. Do not use special or image cursors. `cursor-lie`,
+- Show the pointer cursor only on items that the user can click, and use the same
+  cursor for all buttons. Do not use special or image cursors. `cursor-lie`,
   `cursor-mixed`, `cursor-zoo`
 - Do not draw two borders that touch. `double-border`
 - Give buttons and badges more padding at the sides than at the top. `cramped-padding`
@@ -108,7 +110,6 @@ it.
 - Center an icon on the line of its label. `icon-centre`
 - Align a table header with its cells. `table-column`
 - Use the same page width, padding and header height on all pages. `pages differ`
-- Put a dialog in the center of the content area, not in the center of the window.
 - Put an indicator, for example a tab underline, on a line that it belongs to.
 
 ## Motion

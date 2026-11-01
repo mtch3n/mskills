@@ -41,8 +41,9 @@ The kinds, the options and the hooks are in `references/kinds.md`.
 - `F`: a defect. Fix it. Do not report the work as done while an `F` stays.
 - `W`: fix it, or tell the user why the project's rules allow it.
 - `S`: a slop pattern. Remove it if no rule asks for it.
-- A finding for words (`helper-text`, `restates`, `filler`, `chatty`): remove the
-  text. Do not write it again in other words.
+- A finding for words (`restates`, `filler`, `chatty`): remove the text. Do not
+  write it again in other words. For `helper-text`, keep the sentence only if it
+  helps the next action or prevents a mistake.
 - Fix the cause in the shared style when the same problem is on several pages.
 - Do not remove content to make a check pass.
 

@@ -22,6 +22,26 @@ STILL = "*,*::before,*::after{animation:none!important;transition:none!important
 STYLE_FIELDS = ["font-size", "font-weight", "font", "color", "background", "radius", "padding", "border", "text-transform", "shadow"]
 LAYOUT_FIELDS = ["contentLeft", "contentRight", "headerHeight", "sidebarWidth", "bodyFont", "h1", "radius", "controlHeight", "iconSize"]
 CROP_LIMIT = 12
+PROPERTIES = {
+    "inconsistent": ["font-size", "padding", "height", "min-height", "border-radius", "font-weight"],
+    "scale": ["font-size", "border-radius"],
+    "drift": ["font-size", "color", "background-color"],
+    "small-text": ["font-size"],
+    "icon-centre": ["margin-top", "vertical-align", "top", "align-items"],
+    "off-centre": ["padding", "padding-top", "padding-bottom", "line-height", "height"],
+    "cramped-padding": ["padding"],
+    "table-column": ["padding", "padding-left", "padding-right", "text-align"],
+    "numeric-align": ["text-align", "font-variant-numeric"],
+    "contrast": ["color"],
+    "row-height": ["height", "min-height", "padding", "line-height"],
+    "gap": ["gap", "margin", "margin-top", "margin-bottom"],
+    "edge": ["margin", "margin-left", "padding", "padding-left"],
+    "control-cut": ["width", "min-width", "max-width", "flex", "white-space", "overflow"],
+    "clipped": ["width", "max-width", "overflow", "white-space", "height"],
+    "overflow-x": ["width", "min-width", "white-space"],
+    "control-font": ["font", "font-family", "font-size"],
+    "proximity": ["margin", "margin-top", "margin-bottom"],
+}
 
 
 def as_url(arg):
@@ -176,6 +196,47 @@ def short(values, limit=6):
 SEEN = {}
 
 
+def sources(page, items):
+    wanted = [item for item in items if item.get("ref") and item["kind"] in PROPERTIES]
+    if not wanted:
+        return
+    client = page.context.new_cdp_session(page)
+    sheets = {}
+    client.on("CSS.styleSheetAdded", lambda event: sheets.__setitem__(event["header"]["styleSheetId"], event["header"]))
+    try:
+        client.send("DOM.enable")
+        client.send("CSS.enable")
+        root = client.send("DOM.getDocument", {"depth": 0})["root"]["nodeId"]
+        for item in wanted:
+            node = client.send("DOM.querySelector", {"nodeId": root, "selector": f'[data-uic="{item["ref"]}"]'})["nodeId"]
+            if node:
+                item["source"] = source_of(client.send("CSS.getMatchedStylesForNode", {"nodeId": node}), PROPERTIES[item["kind"]], sheets)
+    except PlaywrightError:
+        return
+    finally:
+        client.detach()
+
+
+def source_of(matched, names, sheets):
+    inline = matched.get("inlineStyle") or {}
+    if any(prop["name"] in names and prop.get("text") for prop in inline.get("cssProperties", [])):
+        return "inline style"
+    for entry in reversed(matched.get("matchedCSSRules", [])):
+        rule = entry["rule"]
+        if rule.get("origin") != "regular":
+            continue
+        props = [prop for prop in rule["style"].get("cssProperties", []) if prop["name"] in names and prop.get("text")]
+        if not props:
+            continue
+        header = sheets.get(rule.get("styleSheetId")) or {}
+        url = header.get("sourceURL") or ""
+        line = rule["style"].get("range", {}).get("startLine", 0) + 1
+        name = urlparse(url).path.rsplit("/", 1)[-1] if url else "inline <style>"
+        declared = "; ".join(f"{prop['name']}: {prop['value']}" for prop in props[:2])
+        return f"{name}:{line} {rule['selectorList']['text']} {{ {declared} }}"
+    return None
+
+
 def print_report(report, frame, crops, out, verbose=False):
     fails = sum(1 for f in report["findings"] if f["severity"] == "fail")
     warns = len(report["findings"]) - fails
@@ -194,7 +255,8 @@ def print_report(report, frame, crops, out, verbose=False):
         SEEN.setdefault(mark, report["width"])
         count = f" ×{len(items)}" if len(items) > 1 else ""
         element = f" | {first['elements'][0]}" if first["elements"] else ""
-        print(f"  {key[0]} {first['kind']}{count}: {first['message']}{element}"[:240])
+        where = f" @ {first['source']}" if first.get("source") else ""
+        print(f"  {key[0]} {first['kind']}{count}: {first['message']}{element}"[:240] + where[:160])
     if repeated:
         print(f"  same as at {min(SEEN[m] for m in SEEN if m[0] == page)}px: {', '.join(repeated)}")
     if verbose:
@@ -313,6 +375,7 @@ def main():
             for width in widths:
                 load(page, url, width, args.height)
                 report = page.evaluate(PROBE, {"frame": args.frame, "mode": args.mode})
+                sources(page, report["findings"] + report["smells"])
                 name = f"{slug(url)}-{width}"
                 frame, crops = save(page, report, args.out, name)
                 print_report(report, frame, crops, args.out, args.verbose)

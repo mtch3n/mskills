@@ -289,8 +289,15 @@
   };
 
   const findings = [];
+  let refs = 0;
+  const ref = (list) => {
+    const el = list[0]?.el;
+    if (!el?.setAttribute) return undefined;
+    if (!el.hasAttribute("data-uic")) el.setAttribute("data-uic", String(++refs));
+    return el.getAttribute("data-uic");
+  };
   const add = (severity, kind, message, list, boxes, extra) => {
-    findings.push(Object.assign({ severity, kind, message, elements: list.map((n) => describe(n.el)), boxes: boxes.map(asList) }, extra || {}));
+    findings.push(Object.assign({ severity, kind, message, elements: list.map((n) => describe(n.el)), boxes: boxes.map(asList), ref: ref(list) }, extra || {}));
   };
 
   const scrollWidth = root.scrollWidth;
@@ -569,7 +576,7 @@
     if (contrastSeen.has(key)) { contrastSeen.get(key).count++; continue; }
     const entry = { count: 1 };
     contrastSeen.set(key, entry);
-    add(ratio < (large ? 2 : 3) ? "fail" : "warn", "contrast", `text contrast ${ratio.toFixed(2)}:1, needs ${needed}:1 (${hex(shown)} on ${hex(bg)})`, [node], [node.text], { pair: key, entry });
+    add("fail", "contrast", `text contrast ${ratio.toFixed(2)}:1, needs ${needed}:1 (${hex(shown)} on ${hex(bg)})`, [node], [node.text], { pair: key, entry });
   }
   for (const f of findings) if (f.entry) { if (f.entry.count > 1) f.message += `, ${f.entry.count} places`; delete f.entry; }
 
@@ -781,13 +788,13 @@
   const smells = [];
   const smell = (kind, message, list) => {
     if (!list.length) return;
-    smells.push({ kind, count: list.length, message: message(list.length), elements: list.slice(0, 4).map((n) => describe(n.el)), boxes: list.slice(0, 12).map((n) => asList(n.text && !n.box ? n.text : n.b)) });
+    smells.push({ kind, count: list.length, message: message(list.length), ref: ref(list), elements: list.slice(0, 4).map((n) => describe(n.el)), boxes: list.slice(0, 12).map((n) => asList(n.text && !n.box ? n.text : n.b)) });
   };
   const visible = nodes.filter((n) => !n.hidden && n.tag !== "HTML" && (n.box || n.text));
   const textClip = (n) => /text/.test(n.cs.backgroundClip + n.cs.webkitBackgroundClip);
   smell("gradient-text", (k) => `${k} text element(s) filled with a gradient`, visible.filter((n) => textClip(n) && /gradient\(/.test(n.cs.backgroundImage)));
   smell("gradient", (k) => `${k} element(s) with a gradient background`, visible.filter((n) => !textClip(n) && /gradient\(/.test(n.cs.backgroundImage) && width(n.b) * height(n.b) >= 400));
-  smell("glass", (k) => `${k} element(s) with a blurred see-through background`, visible.filter((n) => /blur/.test(n.cs.backdropFilter || n.cs.webkitBackdropFilter || "")));
+  smell("glass", (k) => `${k} element(s) with a blurred see-through background`, visible.filter((n) => /blur/.test(n.cs.backdropFilter || n.cs.webkitBackdropFilter || "") && !["sticky", "fixed"].includes(n.cs.position) && width(n.b) * height(n.b) < 0.9 * innerWidth * innerHeight));
   const glows = (shadow) => {
     if (!shadow || shadow === "none") return false;
     return shadow.split(/,(?![^()]*\))/).some((part) => {
@@ -817,7 +824,7 @@
     return !!bg && bg.a > 0.05 && hsl(bg).s >= 0.2 && hsl(bg).l < 0.97 && hsl(bg).l > 0.08;
   };
   const pillShaped = (n) => n.box && height(n.b) <= 32 && px(n.cs.borderTopLeftRadius) >= height(n.b) / 2 - 1 && !!n.inner;
-  smell("tinted-box", (k) => `${k} box(es) with a coloured fill around content`, visible.filter((n) => card(n) && tintedFill(n)));
+  smell("tinted-box", (k) => `${k} box(es) with a coloured fill around content`, visible.filter((n) => card(n) && tintedFill(n) && !n.el.closest("[role=alert],[role=status],[aria-live]")));
   const stripe = (n) => {
     const bw = borderWidths(n.cs);
     const sideStripe = (bw[3] >= 2 && bw[3] >= 2 * Math.max(bw[0], bw[1], bw[2])) || (bw[1] >= 2 && bw[1] >= 2 * Math.max(bw[0], bw[2], bw[3]));
@@ -926,7 +933,7 @@
     if (heavy.length) add("warn", mode === "app" ? "chatty" : "text-heavy", mode === "app" ? `the screen explains itself in prose; ${heavy.join("; ")}` : `the page reads like a document; ${heavy.join("; ")}`, [], []);
   }
 
-  const labelLimits = [["button", 3, (n) => n.tag === "BUTTON" || roleOf(n.el) === "button"], ["tab or menu item", 4, (n) => ["tab", "menuitem", "option"].includes(roleOf(n.el))], ["table header", 3, (n) => n.tag === "TH"], ["heading", 10, (n) => /^H[1-6]$/.test(n.tag)]];
+  const labelLimits = [["button", 4, (n) => n.tag === "BUTTON" || roleOf(n.el) === "button"], ["tab or menu item", 4, (n) => ["tab", "menuitem", "option"].includes(roleOf(n.el))], ["table header", 5, (n) => n.tag === "TH"], ["heading", 10, (n) => /^H[1-6]$/.test(n.tag)]];
   if (mode !== "docs") for (const [what, limit, test] of labelLimits) {
     const long = visible.filter((n) => test(n) && wordsOf(n.el) > limit);
     if (long.length) add("warn", "long-label", `${long.length} ${what} label(s) over ${limit} words, e.g. "${(long[0].el.innerText || "").trim().slice(0, 60)}"`, long.slice(0, 4), long.slice(0, 4).map((n) => n.b));
@@ -939,7 +946,7 @@
   if (restating.length) add("warn", "restates", `${restating.length} sentence(s) repeat the heading above them, e.g. "${restating[0][1].own.slice(0, 60)}"`, restating.slice(0, 4).map(([, n]) => n), restating.slice(0, 4).map(([, n]) => n.text));
   if (mode === "app") {
     const others = helpers.filter((pair) => !restating.includes(pair));
-    if (others.length) add("warn", "helper-text", `${others.length} helper sentence(s) under a heading, e.g. "${others[0][1].own.slice(0, 60)}"; remove each one that does not help the next action`, others.slice(0, 4).map(([, n]) => n), others.slice(0, 4).map(([, n]) => n.text));
+    smell("helper-text", (k) => `${k} helper sentence(s) under a heading, e.g. "${others[0][1].own.slice(0, 60)}"; keep one only if it helps the next action or prevents a mistake`, others.map(([, n]) => n));
   }
   const FILLER = ["just to confirm", "here you can", "here's", "this section", "this page", "allows you to", "lets you", "simply", "easily", "quickly", "please note", "note that", "in one place", "at a glance", "keep track of", "stay on top of", "everything you need", "feel free to", "don't worry", "make sure to", "get started by", "welcome to", "you can now"];
   const filler = FILLER.filter((p) => new RegExp(`(^|[^a-z])${p.replace(/'/g, "['’]")}([^a-z]|$)`).test(pageText));

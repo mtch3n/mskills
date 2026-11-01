@@ -137,6 +137,13 @@ class SlopLintTest(unittest.TestCase):
         _, found = run(self.dir, "Users.tsx")
         self.assertEqual(found, {})
 
+    def test_removed_focus_outline(self):
+        (self.dir / "f.css").write_text(".button:focus { outline: none; }\n.ok:focus-visible { outline: none; box-shadow: 0 0 0 2px var(--ring); }\n")
+        (self.dir / "F.tsx").write_text('<button className="outline-none">a</button>\n<button className="outline-none focus-visible:ring-2">b</button>\n')
+        _, css = run(self.dir, "f.css")
+        _, tsx = run(self.dir, "F.tsx")
+        self.assertEqual((css, tsx), ({"focus-removed": [1]}, {"focus-removed": [1]}))
+
     def test_native_elements_pass_without_shadcn(self):
         (self.dir / "Form.tsx").write_text('<button onClick={go}>Go</button>\n<select></select>\n')
         _, found = run(self.dir, "Form.tsx")

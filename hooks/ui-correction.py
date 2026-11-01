@@ -30,12 +30,17 @@ COPY_CONTEXT = (
 )
 
 
+NOT_USER = re.compile(r"<agent-message\b|<task-notification>|\[Subagent hand-back\]|^Another Claude session sent a message|^The \w+ plugin sent a message|<ostia-bus-messages>")
+
+
 def main():
     try:
         payload = json.load(sys.stdin)
     except (json.JSONDecodeError, ValueError):
         return 0
     prompt = payload.get("prompt") or ""
+    if NOT_USER.search(prompt):
+        return 0
     copy = bool(COPY.search(prompt))
     if not (copy or (CORRECTION.search(prompt) and UI.search(prompt))):
         return 0

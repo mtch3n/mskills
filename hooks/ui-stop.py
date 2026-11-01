@@ -6,24 +6,22 @@ import os
 import pathlib
 import re
 import subprocess
-import socket
 import sys
 import tempfile
-import urllib.parse
+import importlib.util
 
 UI = (".css", ".scss", ".sass", ".less", ".html", ".htm", ".jsx", ".tsx", ".vue", ".svelte", ".astro", ".mdx")
 UI_PATH = re.compile(r"[\w./~@+-]+(?:" + "|".join(re.escape(e) for e in UI) + r")\b")
 WRITES = re.compile(r"\bsed\s+-i|\bperl\s+-p?i|>|\btee\b|\bpython3?\b|\bmv\b|\bcp\b|\bpatch\b|\bgit\s+apply\b")
 MEASURE = re.compile(r"ui-check\.py|probe\.js")
 EDIT_TOOLS = {"Edit", "Write", "MultiEdit"}
-SCRIPTS = pathlib.Path(__file__).resolve().parent.parent / "skills" / "ui-check" / "scripts"
-LINT = SCRIPTS / "slop-lint.py"
-CHECK = SCRIPTS / "ui-check.py"
-PAGES = re.compile(r"^\s*[-*]?\s*ui-check:\s*(\S.*)$")
 ROUNDS = 3
 FIXTURE = re.compile(r"/(tests?|__tests__|fixtures?|__fixtures__|evals)/")
-DEV_PORTS = [3000, 3001, 5173, 5174, 4321, 4173, 8080, 8000, 5000]
 ROUTES = [re.compile(p) for p in [r"^(?:src/)?app/(.*?)/?page\.(?:tsx|jsx|ts|js|mdx)$", r"^(?:src/)?pages/(.*?)\.(?:tsx|jsx|astro|vue|svelte|mdx)$", r"^src/routes/(.*?)/?\+page\.svelte$"]]
+
+spec = importlib.util.spec_from_file_location("ui_measure", pathlib.Path(__file__).with_name("ui_measure.py"))
+ui = importlib.util.module_from_spec(spec)
+spec.loader.exec_module(ui)
 
 
 def events(transcript):
@@ -90,19 +88,6 @@ def measured_after_edit(transcript, cwd):
     return last_measure > last_edit
 
 
-def lint(files, cwd):
-    result = subprocess.run([sys.executable, "-I", str(LINT), *files], capture_output=True, text=True, cwd=cwd, timeout=30)
-    lines = result.stdout.strip().splitlines()
-    if len(lines) <= 1:
-        return ""
-    return "\n".join(lines if len(lines) <= 21 else lines[:20] + [f"... {len(lines) - 21} more", lines[-1]])
-
-
-def root_of(cwd):
-    out = subprocess.run(["git", "-C", str(cwd), "rev-parse", "--show-toplevel"], capture_output=True, text=True)
-    return pathlib.Path(out.stdout.strip()) if out.returncode == 0 else pathlib.Path(cwd)
-
-
 def route_of(path, root):
     rel = pathlib.Path(path).resolve().relative_to(root).as_posix() if pathlib.Path(path).resolve().is_relative_to(root) else ""
     for pattern in ROUTES:
@@ -115,93 +100,42 @@ def route_of(path, root):
     return None
 
 
-def dev_server():
-    for port in DEV_PORTS:
-        try:
-            with socket.create_connection(("127.0.0.1", port), timeout=0.2) as conn:
-                conn.sendall(b"GET / HTTP/1.0\r\nHost: localhost\r\n\r\n")
-                head = conn.recv(4096).lower()
-                if b"<html" in head or b"text/html" in head:
-                    return f"http://localhost:{port}"
-        except OSError:
-            continue
-    return None
-
-
-def pages_for(files, cwd):
-    root = root_of(cwd)
-    listed, base = [], None
-    rules = root / "DESIGN.md"
-    if rules.is_file():
-        for line in rules.read_text(errors="replace").splitlines():
-            match = PAGES.match(line)
-            if match:
-                for item in match.group(1).split():
-                    if "://" in item and urllib.parse.urlparse(item).path in {"", "/"}:
-                        base = item.rstrip("/")
-                    listed.append(item if "://" in item else str(root / item))
-    pages = [f for f in files if f.endswith((".html", ".htm"))]
+def pages_for(files, cwd, named):
+    root = ui.root_of(cwd)
+    listed, base = ui.listed_pages(root)
+    direct = [f for f in files if f.endswith((".html", ".htm"))]
+    shared = []
     assets = {pathlib.Path(f).name for f in files if not f.endswith((".html", ".htm"))}
     if assets:
-        tracked = subprocess.run(["git", "-C", str(root), "ls-files", "*.html", "*.htm"], capture_output=True, text=True)
-        names = tracked.stdout.split() if tracked.returncode == 0 else [str(f.relative_to(root)) for f in root.rglob("*.htm*") if "node_modules" not in f.parts]
-        for name in names[:300]:
-            path = root / name
-            if str(path) not in pages and path.is_file() and any(asset in path.read_text(errors="replace") for asset in assets):
-                pages.append(str(path))
+        for path in ui.html_files(root):
+            if str(path) not in direct and path.is_file() and any(asset in path.read_text(errors="replace") for asset in assets):
+                shared.append(str(path))
     routes = [r for r in (route_of(f, root) for f in files) if r is not None]
-    server = base or ((routes or not pages) and dev_server())
+    server = base or ((routes or not (direct or shared)) and ui.dev_server())
     if server:
-        pages += [server + r for r in dict.fromkeys(routes or ["/"])]
-    pages += [item for item in listed if item not in pages and not (base and item.rstrip("/") == base)]
-    return list(dict.fromkeys(pages))[:6]
-
-
-def short(finding):
-    element = f" | {finding['elements'][0]}" if finding.get("elements") else ""
-    return f"{finding['kind']}: {finding['message']}{element}"[:200]
-
-
-def measure(pages, cwd):
-    out = pathlib.Path(tempfile.mkdtemp(prefix="ui-stop-"))
-    subprocess.run(["uv", "run", "--quiet", "--script", str(CHECK), *pages, "--stress", "--interact", "--out", str(out)], capture_output=True, text=True, cwd=cwd, timeout=270)
-    found = {}
-
-    def note(page, width, severity, item, extra=""):
-        key = (page, severity, item["kind"], item["elements"][0] if item.get("elements") else "")
-        if key not in found:
-            found[key] = {"widths": [], "line": f"{extra}{short(item)}"}
-        if width not in found[key]["widths"]:
-            found[key]["widths"].append(width)
-
-    for base in sorted(out.glob("*.json")):
-        if base.stem.endswith(("-stress", "-interact")):
-            continue
-        report = json.loads(base.read_text())
-        page, width = pathlib.Path(report["url"]).name or report["url"], report["width"]
-        for f in report["findings"]:
-            note(page, width, "F" if f["severity"] == "fail" else "W", f)
-        for item in report["smells"]:
-            note(page, width, "S", item)
-        stressed = base.with_name(base.stem + "-stress.json")
-        if stressed.exists():
-            seen = {(f["kind"], tuple(f["elements"])) for f in report["findings"] if f["severity"] == "fail"}
-            for f in json.loads(stressed.read_text())["findings"]:
-                if f["severity"] == "fail" and (f["kind"], tuple(f["elements"])) not in seen:
-                    note(page, width, "F", f, "with longer text: ")
-        interact = base.with_name(base.stem + "-interact.json")
-        if interact.exists():
-            for f in json.loads(interact.read_text()):
-                note(page, width, "F" if f["severity"] == "fail" else "W", f)
-    lines = {"F": [], "W": [], "S": []}
-    for (page, severity, _, _), value in found.items():
-        widths = "/".join(f"{w}px" for w in sorted(value["widths"]))
-        lines[severity].append(f"{severity} {page} @ {widths} {value['line']}")
-    return lines["F"], lines["W"] + lines["S"]
+        direct += [server + r for r in dict.fromkeys(routes or ["/"])]
+    shared += [item for item in listed if not (base and item.rstrip("/") == base)]
+    direct += [p for p in named if p not in direct]
+    pages = list(dict.fromkeys(direct + shared))[:6]
+    return pages, {ui.label(p) for p in direct}
 
 
 def signature(files):
     return hashlib.sha256("".join(f"{f}:{os.stat(f).st_mtime_ns}:{os.stat(f).st_size}" for f in files).encode()).hexdigest()
+
+
+def last_prompt(transcript):
+    last = None
+    for event in events(transcript):
+        content = (event.get("message") or {}).get("content")
+        if event.get("type") == "user" and not event.get("isMeta") and (isinstance(content, str) or any(isinstance(c, dict) and c.get("type") == "text" for c in content or [])):
+            last = event.get("uuid") or event.get("timestamp")
+    return last
+
+
+def baseline_pages(session):
+    path = pathlib.Path(tempfile.gettempdir()) / f"ui-baseline-{session}.json"
+    return json.loads(path.read_text()).get("pages", []) if path.exists() else []
 
 
 def main():
@@ -213,22 +147,26 @@ def main():
     cwd = payload.get("cwd") or os.getcwd()
     if not transcript or not os.path.exists(transcript):
         return 0
-    state_file = pathlib.Path(tempfile.gettempdir()) / f"ui-stop-{payload.get('session_id') or pathlib.Path(transcript).stem}.json"
-    state = json.loads(state_file.read_text()) if state_file.exists() else {"rounds": 0, "signature": ""}
+    session = payload.get("session_id") or pathlib.Path(transcript).stem
+    state_file = pathlib.Path(tempfile.gettempdir()) / f"ui-stop-{session}.json"
+    state = json.loads(state_file.read_text()) if state_file.exists() else {}
+    prompt = last_prompt(transcript)
+    if not state or state.get("prompt") != prompt:
+        state = {"prompt": prompt, "rounds": 0, "signature": "", "shown": []}
     try:
         files = changed_files(transcript, cwd)
         if not files or state["rounds"] >= ROUNDS or signature(files) == state["signature"]:
             return 0
         state["signature"] = signature(files)
-        pages = pages_for(files, cwd)
-        found = lint(files, cwd)
-        fails, others = measure(pages, cwd) if pages else ([], [])
+        pages, direct = pages_for(files, cwd, baseline_pages(session))
+        found = ui.lint(files, cwd)
+        lines = ui.measure(pages, cwd, ["--stress", "--interact"], 270) if pages else []
     except (OSError, ValueError, KeyError, subprocess.SubprocessError):
         return 0
     first = state["rounds"] == 0
     state["rounds"] += 1
-    state_file.write_text(json.dumps(state))
     if not pages:
+        state_file.write_text(json.dumps(state))
         if not first or payload.get("stop_hook_active") or measured_after_edit(transcript, cwd):
             return 0
         shown = "\n".join(f"- {f}" for f in files[:20])
@@ -243,18 +181,26 @@ def main():
             reason += f"\n\nslop-lint on these files:\n{found}"
         json.dump({"decision": "block", "reason": reason}, sys.stdout)
         return 0
-    if not fails and not (first and (others or found)):
+    kept = [text for page, severity, text in lines if severity == "F" or page in direct]
+    fails = [text for text in kept if text.startswith("F ")]
+    new = [text for text in kept if text not in state["shown"]]
+    lint_new = found and found not in state["shown"]
+    state["shown"] += new + ([found] if lint_new else [])
+    state_file.write_text(json.dumps(state))
+    if not fails and not new and not lint_new:
         return 0
-    lines = (fails + others)[:30]
-    more = len(fails) + len(others) - len(lines)
+    shown = kept[:30]
+    more = len(kept) - len(shown)
     reason = (
         "The ui-check hook measured the pages that use the files you changed, with longer text, keyboard focus, hover and open menus:\n"
         + "\n".join(f"- {p}" for p in pages) + "\n\n"
-        + "\n".join(lines) + (f"\n... {more} more" if more > 0 else "") + "\n\n"
+        + "\n".join(shown) + (f"\n... {more} more" if more > 0 else "") + "\n\n"
         "Fix each F line. Fix each W and S line, or tell the user why the project's rules allow it. "
-        "Fix the cause in the shared style when the same problem is on several pages. Do not remove content to make a check pass."
+        "The text after @ is the CSS rule that sets the value. Fix the cause in the shared style when the same problem is on several pages. "
+        "On a page that the user did not name, change only what an F line needs. "
+        "If a page was not measured, say so in your report and do not say that it is correct."
     )
-    if found:
+    if found and lint_new:
         reason += f"\n\nslop-lint on the changed files:\n{found}"
     json.dump({"decision": "block", "reason": reason}, sys.stdout)
     return 0

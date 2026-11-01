@@ -231,7 +231,7 @@ def run_one(case_dir, case, arm_name, agent, plugin_dir, index, out_root, model)
         shutil.copy(transcript, out / "transcript.jsonl")
     if codex_calls is not None:
         (out / "calls.json").write_text(json.dumps(codex_calls, indent=1))
-    diff = subprocess.run(["git", "diff", "HEAD"], cwd=workdir, capture_output=True, text=True).stdout
+    diff = capture_diff(workdir)
     (out / "diff.patch").write_text(diff)
     run = Run(workdir, transcript, final)
     if codex_calls is not None:
@@ -266,6 +266,11 @@ def run_one(case_dir, case, arm_name, agent, plugin_dir, index, out_root, model)
     return result
 
 
+def capture_diff(workdir):
+    subprocess.run(["git", "add", "-A", "-N"], cwd=workdir, capture_output=True)
+    return subprocess.run(["git", "diff", "HEAD", "--", ".", ":(exclude).serena"], cwd=workdir, capture_output=True, text=True).stdout
+
+
 def regrade(folder):
     results = []
     for result_file in sorted(folder.glob("*/*/*/result.json")):
@@ -273,6 +278,8 @@ def regrade(folder):
         result = json.loads(result_file.read_text())
         case_dir = EVALS / "cases" / result["case"]
         run = Run(pathlib.Path(result["workdir"]), out / "transcript.jsonl", (out / "final.md").read_text())
+        if run.workdir.is_dir():
+            (out / "diff.patch").write_text(capture_diff(run.workdir))
         run.diff = (out / "diff.patch").read_text()
         grades = load_module(case_dir / "grade.py", f"grade_{case_dir.name}").grade(run)
         weight = sum(item.get("weight", 1) for item in grades) or 1
