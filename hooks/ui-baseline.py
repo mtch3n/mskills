@@ -63,7 +63,7 @@ def main():
         "and fix the other problems that you find, for example parts that do not line up or one component with different styles. "
         "Fix each F line. Fix each W line, or tell the user why the project's rules allow it. An S line is a question: remove the item only if it is decoration that no rule asks for. "
         "Do not remove content, data or controls to make a check pass. "
-        "The text after @ is the CSS rule that sets the value. When you stop, the hook measures again and shows only new F lines."
+        "The text after @ is the CSS rule that sets the value. Measure again with `ui-antislop` before you say that the work is done."
     )
     json.dump({"hookSpecificOutput": {"hookEventName": "UserPromptSubmit", "additionalContext": context}}, sys.stdout)
     return 0

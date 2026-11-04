@@ -160,6 +160,21 @@ times the cost of the agents with no plugin. There were three causes:
 
 The two holdout cases are now known. A fair test needs new holdout cases.
 
+The Stop hook is removed. In the real sessions of 1 to 4 November, it stopped the
+agent about 400 times. Almost all of these stops were for `slop-lint` findings, not
+for fails. In one session it stopped the agent 92 times. Each stop made the agent
+continue after its final reply. Thus the reply moved off the screen while the user
+read it.
+
+In the evals, the agent did fix the items after a stop. But it also checked the page
+again with its own tools and wrote its report again. Feedback now
+comes only while the agent works: the lint after each edit and the baseline before
+the work.
+
+The correction hook matched words such as "stop", "again" and "why". It added the UI
+steps to prompts that were not about a UI. It now needs a word for a visible defect,
+for example "misaligned", "too big" or "cut off", and a word for a part of a UI.
+
 ## Too much text
 
 The user's history has 86 prompts about text, for example "not useful", "too

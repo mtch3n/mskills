@@ -4,14 +4,13 @@ import re
 import sys
 
 CORRECTION = re.compile(
-    r"\b(again|still|i (?:said|told you|asked)|already (?:said|told)|not what i|why (?:did|do|is|are) |stop |don'?t|do not|never|wrong|ugly|weird|messy|broken|"
-    r"looks? (?:bad|off|wrong|weird|cheap|generic)|doesn'?t (?:line up|align|match|fit)|not (?:aligned|centered|centred|consistent)|misaligned|inconsistent|"
-    r"too (?:big|small|much|many|wide|narrow|tight|close|far)|ai slop|slop|uneven|is gone|are gone|disappear\w*|cut off|overlap\w*|can'?t see|not visible|squished|cramped|off-center|off center)",
+    r"\b(ugly|messy|weird[- ]looking|looks? (?:bad|off|wrong|weird|cheap|generic|ugly)|(?:don'?t|doesn'?t|do not|does not) (?:line up|align|fit)|not (?:aligned|centered|centred|consistent)|misaligned|inconsistent|"
+    r"too (?:big|small|much|many|wide|narrow|tight|close|far|rounded|crowded)|ai slop|slop|uneven|cut off|overlap\w*|can'?t see|not visible|squished|cramped|off[- ]cent(?:er|re)|\d+ ?px off)",
     re.I,
 )
 UI = re.compile(
-    r"\b(ui|ux|css|layout|page|screen|button|card|table|header|footer|sidebar|navbar|modal|dialog|dropdown|badge|pill|icon|font|colou?r|"
-    r"padding|margin|spacing|gap|align\w*|border|radius|shadow|gradient|design|pixel|\d+px|mobile|responsive|tooltip|looks?)\b",
+    r"\b(ui|ux|css|layout|page|screen|button|btn|card|table|header|footer|sidebar|navbar|modal|dialog|dropdown|badge|pill|icon|font|colou?r|"
+    r"padding|margin|spacing|gap|align\w*|border|radius|shadow|gradient|pixel|\d+px|mobile|responsive|tooltip|chips?|menu|text ?box)\b",
     re.I,
 )
 COPY = re.compile(r"\b(too verbose|verbose|wordy|chatty|not useful|filler|remove (?:this|the|that) (?:text|sentence|line|subtitle|description|hint)|too (?:much|many) (?:text|words)|less text|like a text ?book)\b", re.I)

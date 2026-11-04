@@ -33,7 +33,6 @@ plugin that ships them with a hook.
 | [`ui-correction.py`](hooks/ui-correction.py) | `UserPromptSubmit` | When the user's message corrects a UI, tells the agent to write the rule in the rules file and to measure before and after. |
 | [`ui-baseline.py`](hooks/ui-baseline.py) | `UserPromptSubmit` | When the user asks for an open task on a page, such as "polish the Team page", measures the page before the work. Gives the agent the problems that are already there, with the CSS rule of each, and tells it that the list is not complete. |
 | [`ui-lint.py`](hooks/ui-lint.py) | `PostToolUse` on edits | Runs `slop-lint` on the lines that the agent just wrote to a UI file and gives it the findings. |
-| [`ui-stop.py`](hooks/ui-stop.py) | `Stop` | When the agent changed UI files, finds the pages that use them and measures them with `ui-antislop --stress --interact`. Stops the agent only for a new fail or a new `slop-lint` finding, up to 3 times for each user message. |
 
 All hooks need `python3`.
 

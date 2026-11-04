@@ -27,7 +27,6 @@ uv run --script <base>/scripts/ui-antislop.py <page> [<page> ...] --stress --int
   changed.
 - Run it one time before you change the code, to find every problem on the page,
   and one time when you think that you are done.
-- In Claude Code, a hook measures the pages again when you stop. Fix what it reports.
 - `python3 <base>/scripts/slop-lint.py [<file> ...]` checks the source for raw colors
   and slop. With no file, it checks the lines that you added. In a shadcn project, it
   also reports each native element that has a shadcn component.

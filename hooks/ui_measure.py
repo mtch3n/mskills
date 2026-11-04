@@ -1,7 +1,6 @@
 import json
 import pathlib
 import re
-import socket
 import subprocess
 import sys
 import tempfile
@@ -41,19 +40,6 @@ def html_files(root):
     return [root / name for name in names[:300]]
 
 
-def dev_server():
-    for port in DEV_PORTS:
-        try:
-            with socket.create_connection(("127.0.0.1", port), timeout=0.2) as conn:
-                conn.sendall(b"GET / HTTP/1.0\r\nHost: localhost\r\n\r\n")
-                head = conn.recv(4096).lower()
-                if b"<html" in head or b"text/html" in head:
-                    return f"http://localhost:{port}"
-        except OSError:
-            continue
-    return None
-
-
 def label(page):
     return pathlib.Path(urllib.parse.urlparse(page).path).name or page
 
@@ -65,11 +51,6 @@ def stylesheets(pages):
         if path.is_file():
             found += [str(path.parent / href) for href in STYLESHEET.findall(path.read_text(errors="replace")) if (path.parent / href).is_file()]
     return list(dict.fromkeys(found))
-
-
-def references(page):
-    path = pathlib.Path(page)
-    return {str((path.parent / ref).resolve()) for ref in REFERENCE.findall(path.read_text(errors="replace"))}
 
 
 def lint(files, cwd):

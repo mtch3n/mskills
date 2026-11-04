@@ -1,10 +1,8 @@
 import json
-import os
 import pathlib
 import subprocess
 import sys
 import tempfile
-import time
 import unittest
 
 HOOKS = pathlib.Path(__file__).resolve().parents[1]
@@ -17,95 +15,6 @@ def hook(name, payload):
 
 def tool(name, **data):
     return {"type": "assistant", "timestamp": "2026-10-31T10:00:00Z", "message": {"content": [{"type": "tool_use", "name": name, "input": data}]}}
-
-
-class StopHookTest(unittest.TestCase):
-    def setUp(self):
-        self.dir = pathlib.Path(tempfile.mkdtemp())
-        self.css = self.dir / "app.css"
-        self.css.write_text(".card { border-left: 4px solid red; }\n")
-        self.start = {"type": "user", "timestamp": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime(time.time() - 60))}
-
-    def stop(self, *events, active=False):
-        transcript = self.dir / "t.jsonl"
-        transcript.write_text("\n".join(json.dumps(e) for e in [self.start, *events]) + "\n")
-        return hook("ui-stop.py", {"transcript_path": str(transcript), "cwd": str(self.dir), "stop_hook_active": active, "session_id": f"test-{self.dir.name}"})
-
-    def test_blocks_after_an_unmeasured_ui_edit_and_runs_the_lint(self):
-        out = self.stop(tool("Edit", file_path=str(self.css)))
-        self.assertEqual(out["decision"], "block")
-        self.assertIn("app.css:1", out["reason"])
-        self.assertIn("accent-stripe", out["reason"])
-
-    def test_blocks_after_a_sed_edit(self):
-        out = self.stop(tool("Bash", command="sed -i 's/12px/16px/' app.css"))
-        self.assertEqual(out["decision"], "block")
-
-    def test_passes_a_clean_edit_with_no_page_to_measure(self):
-        self.css.write_text(".card { padding: 16px; }\n")
-        self.assertIsNone(self.stop(tool("Edit", file_path=str(self.css))))
-
-    def test_shows_a_lint_finding_one_time(self):
-        self.assertEqual(self.stop(tool("Edit", file_path=str(self.css)))["decision"], "block")
-        self.css.write_text(self.css.read_text() + "\n")
-        self.assertIsNone(self.stop(tool("Edit", file_path=str(self.css))))
-
-    def test_passes_for_reads_non_ui_files_and_old_files(self):
-        old = self.dir / "old.css"
-        old.write_text("a{}\n")
-        os.utime(old, (time.time() - 3600, time.time() - 3600))
-        self.assertIsNone(self.stop(tool("Bash", command="cat app.css"), tool("Edit", file_path=str(self.dir / "main.py")), tool("Edit", file_path=str(old))))
-
-    def test_measures_the_page_that_uses_the_changed_style(self):
-        self.css.write_text(".wide { width: 900px; height: 20px; background: #eee; }\n")
-        (self.dir / "index.html").write_text("<!doctype html><html><head><meta name='viewport' content='width=device-width'><link rel='stylesheet' href='app.css'></head><body><div class='wide'></div></body></html>")
-        out = self.stop(tool("Edit", file_path=str(self.css)))
-        self.assertEqual(out["decision"], "block")
-        self.assertIn("index.html", out["reason"])
-        self.assertIn("F index.html @ 390px overflow-x", out["reason"])
-        self.assertIsNone(self.stop(tool("Edit", file_path=str(self.css))))
-
-    def test_clean_page_passes_without_a_block(self):
-        self.css.write_text("body { margin: 0; font: 16px/1.5 Arial, sans-serif; }\n")
-        (self.dir / "index.html").write_text("<!doctype html><html lang='en'><head><meta name='viewport' content='width=device-width'><title>a</title><link rel='stylesheet' href='app.css'></head><body><main><h1>Files</h1><p>Two files.</p></main></body></html>")
-        self.assertIsNone(self.stop(tool("Edit", file_path=str(self.css))))
-
-    def test_warnings_do_not_block(self):
-        self.css.write_text("p { font: 10px/1.5 Arial, sans-serif; margin: 0; }\n")
-        (self.dir / "index.html").write_text("<!doctype html><html lang='en'><head><meta name='viewport' content='width=device-width'><title>a</title><link rel='stylesheet' href='app.css'></head><body><main><h1>Files</h1><p>Two files.</p></main></body></html>")
-        self.assertIsNone(self.stop(tool("Edit", file_path=str(self.css))))
-
-    def test_rounds_start_again_for_a_new_prompt(self):
-        self.css.write_text(".wide { width: 900px; height: 20px; }\n")
-        (self.dir / "index.html").write_text("<!doctype html><html><head><meta name='viewport' content='width=device-width'><link rel='stylesheet' href='app.css'></head><body><div class='wide'></div></body></html>")
-        for _ in range(3):
-            self.stop(tool("Edit", file_path=str(self.css)))
-            self.css.write_text(self.css.read_text() + "\n")
-        self.assertIsNone(self.stop(tool("Edit", file_path=str(self.css))))
-        prompt = {"type": "user", "uuid": "p2", "timestamp": self.start["timestamp"], "message": {"content": "now fix the header"}}
-        self.assertEqual(self.stop(prompt, tool("Edit", file_path=str(self.css)))["decision"], "block")
-
-    def test_a_style_with_the_same_name_in_another_folder_does_not_match(self):
-        other = self.dir / "elsewhere"
-        other.mkdir()
-        (other / "app.css").write_text(".wide { width: 900px; height: 20px; }\n")
-        (self.dir / "index.html").write_text("<!doctype html><html><head><meta name='viewport' content='width=device-width'><link rel='stylesheet' href='app.css'></head><body><div class='wide'></div></body></html>")
-        out = self.stop(tool("Edit", file_path=str(other / "app.css")))
-        self.assertNotIn("index.html", (out or {}).get("reason", ""))
-
-    def test_skips_files_outside_the_project(self):
-        outside = pathlib.Path(tempfile.mkdtemp()) / "app.css"
-        outside.write_text(".card { border-left: 4px solid red; }\n")
-        self.assertIsNone(self.stop(tool("Edit", file_path=str(outside))))
-
-    def test_skips_test_fixtures(self):
-        fixture = self.dir / "tests" / "pages" / "defects.css"
-        fixture.parent.mkdir(parents=True)
-        fixture.write_text(".a { border-left: 4px solid red; }\n")
-        self.assertIsNone(self.stop(tool("Edit", file_path=str(fixture))))
-
-    def test_does_not_block_twice(self):
-        self.assertIsNone(self.stop(tool("Edit", file_path=str(self.css)), active=True))
 
 
 class BaselineHookTest(unittest.TestCase):
@@ -172,7 +81,11 @@ class CorrectionHookTest(unittest.TestCase):
         self.assertIsNone(self.context(report))
 
     def test_ignores_other_prompts(self):
-        for prompt in ["run the eval with claude code", "add a page to the docs", "don't commit yet", "the test still fails"]:
+        for prompt in [
+            "run the eval with claude code", "add a page to the docs", "don't commit yet", "the test still fails",
+            "i think the issue is the model does not like the input from the plugin post stop hook, it looks like it will stop instead of fixing",
+            "why did you change the page again, I said do not touch the docs", "never push to main",
+        ]:
             self.assertIsNone(self.context(prompt), prompt)
 
 

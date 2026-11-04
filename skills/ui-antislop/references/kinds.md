@@ -48,13 +48,6 @@ the page uses. Many different values for one property show drift.
   the problems that are already on the page. Fix them in the same pass. The list is
   not complete. Also read the page and its styles yourself.
 - After each edit of a UI file, a hook runs `slop-lint` on the lines that you wrote.
-- When you stop after you changed UI files, a hook finds the pages that use the
-  files and measures them with `--stress --interact`. It finds the pages from a
-  `ui-antislop: <url or file> ...` line in `DESIGN.md`, from the HTML files that use the
-  changed files, or from a dev server on this computer and the routes of the changed
-  files. On a page that only uses a changed style, it shows only the fails. It gives
-  you the problems to fix. It does this up to 3 times for each user message. If it
-  cannot measure a page, it tells you.
 - The text after `@` in a finding is the CSS rule that sets the value, with its file
   and line.
 - When the user's message corrects a UI, a hook tells you to write the rule in the
