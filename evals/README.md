@@ -37,6 +37,9 @@ score, cost, turns, peak context, cache reads and images for each case and arm.
 | `ui-polish` | M | dev | "Polish the Team page" with no defect named. The page has 7 defects that the agent must find. Examples are uneven chips, a hidden Copy button on a phone and no focus style. Checks each fix, the content, the scope and new problems. Needs `uv`. |
 | `holdout-billing` | M | holdout | "Clean up the Billing page" with no defect named. The page has 6 defects. Examples are plan buttons that do not align, a table that does not fit a phone and a row menu that a box cuts off. The grader does not use `ui-antislop`. It measures the page with its own Playwright script. Needs `uv`. |
 | `holdout-shadcn-form` | S | holdout | Add a due date and a status field to a form in a shadcn project. Checks that the agent uses the shadcn date picker and select, and not native elements or another library. Reads the source only. |
+| `holdout-compact-list` | M | holdout | "Too big and wide, the cards look weird, more compact." Checks the toolbar, the container, nested boxes, the card footer and the sidebar. Also checks that the page is not too compact. It uses its own Playwright script. Needs `uv`. |
+| `holdout-settings-nav` | M | holdout | "Everything looks clickable." Checks that group titles look different and do not react to the pointer, the space above each group and the shortcut hints. It uses its own Playwright script. Needs `uv`. |
+| `holdout-shadcn-dashboard` | M | holdout | "Use the shadcn defaults, something is off with the colours and icons." Checks off-palette colours, the icon library in `components.json`, and the shadcn select, scroll area, tooltip and empty state. Reads the source only. |
 | `ship-check-cli` | M | holdout | Defects found and fixed, and traps avoided, in a CLI change |
 | `ste-holdout` | S | holdout | The same as `ste-rewrite`, with a different text |
 

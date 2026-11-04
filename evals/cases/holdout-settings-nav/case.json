@@ -1,0 +1,8 @@
+{
+  "tier": "M",
+  "set": "holdout",
+  "runs": 5,
+  "max_turns": 60,
+  "timeout": 1800,
+  "prompt": "The settings sidebar looks like everything is clickable. Fix it."
+}

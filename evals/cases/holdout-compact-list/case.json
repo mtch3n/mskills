@@ -1,0 +1,8 @@
+{
+  "tier": "M",
+  "set": "holdout",
+  "runs": 5,
+  "max_turns": 60,
+  "timeout": 1800,
+  "prompt": "The leads page feels too big and wide and the cards look weird. Make it more compact, not too compact."
+}

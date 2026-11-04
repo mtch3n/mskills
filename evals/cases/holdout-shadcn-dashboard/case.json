@@ -1,0 +1,8 @@
+{
+  "tier": "M",
+  "set": "holdout",
+  "runs": 5,
+  "max_turns": 40,
+  "timeout": 1200,
+  "prompt": "Use the shadcn defaults on the reports page, I will theme it later. Something is off with the colours and the icons."
+}
