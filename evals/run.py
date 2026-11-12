@@ -14,8 +14,7 @@ import sys
 import tempfile
 
 EVALS = pathlib.Path(__file__).resolve().parent
-REPO = EVALS.parent
-SESSION_COST = REPO / "skills" / "cost-aware" / "scripts" / "session-cost.py"
+SESSION_COST = EVALS / "session-cost.py"
 JUDGE_MODEL = "sonnet"
 
 

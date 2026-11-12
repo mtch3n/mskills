@@ -66,5 +66,3 @@ Not tried: <what couldn't be checked here (real device, real account, a platform
 
 Never call something working that wasn't run. "Not tried" is a normal answer, not a
 failure to hide.
-
-To run long checks without burning tokens, see the `cost-aware` skill.
