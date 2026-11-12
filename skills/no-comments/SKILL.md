@@ -1,69 +1,47 @@
 ---
 name: no-comments
-description: The code has no comments. Use whenever writing, editing or reviewing code, tests, styles, config, CI workflows or shell scripts, and before committing, to keep comments out, to decide whether a line is an allowed tool directive, and to move a comment's reason into the project's docs.
+description: The code has no comments. Use when you write, edit or review code, tests, styles, config, CI workflows or scripts, and before you commit, to keep comments out and to move the reason for the code into the docs.
 ---
 
 # No comments
 
-**The code has no comments. Do not add any.** Comments go stale, and agents trust them
-over the code.
+**Do not add a comment.** This applies to every comment syntax in every file,
+including docstrings, JSDoc, HTML and CSS comments, `#` lines in config and CI
+workflows, and commented-out code.
 
-That covers every comment syntax in every file you write: `//`, `/* */`, JSDoc and
-other doc comments (`/** */`, `///`, `//!`, Python docstrings), `{/* */}` in JSX, CSS
-and SCSS, `<!-- -->` in HTML and XML templates, tests, and `#` lines in Python, shell,
-YAML (CI workflows and actions), TOML, Dockerfiles, Makefiles and other config.
-Commented-out code too: delete it, git has it.
+## Where the words go
 
-## Where the words go instead
-
-- **The *what*** goes in names. Extract a well-named function, constant, type or test
-  instead of explaining a block. A magic value becomes a named constant; a tricky
-  condition becomes a named predicate.
-- **The *why*** goes in the project's docs, not the code: the design doc, `docs/`,
-  an ADR, or the README. If an agent editing that code must know it, put it in the
-  project's agent instructions (`CLAUDE.md`, `AGENTS.md`). A reason for a CI job
-  goes in the docs too, by workflow file and job name, never in the workflow.
-- **The history** (what changed, which bug it fixed) goes in the commit message.
-- **TODOs** go in the issue tracker.
+- **What the code does** goes in names: a named function, constant, type or test.
+- **Why the code is so** (a limit, a risk, a vendor rule, a decision) goes in the
+  project's docs: the README, `docs/` or an ADR. If an agent that edits the code
+  must know it, put it in `CLAUDE.md` or `AGENTS.md`. Write it there in the same
+  change. Do not drop it.
+- **History** goes in the commit message. **TODOs** go in the issue tracker.
 
 ## Allowed
 
-Only lines a tool reads, plus the lines a file needs to run:
-
-- Tool directives: `biome-ignore`, `eslint-disable-next-line`, `@ts-expect-error`,
-  `/// <reference>`, `# shellcheck`, `# yaml-language-server`, `# noqa`,
-  `# type: ignore`, `//go:build`, `//go:generate`, `// prettier-ignore` and the like.
-  A directive carries no prose beyond what the tool requires as its reason.
-- Shebangs (`#!/usr/bin/env python3`) and encoding or mode lines a tool parses.
-
-Exempt: generated and vendored files (codegen output, lockfiles, copied-in UI kits
-such as shadcn components). Hand edits to them don't need their comments removed.
-
-Not comments: strings. `#` lines inside a here-document, a template string, a
-generated shell rc, a Markdown heading, or a regex stay.
+- Tool directives with no prose, such as `# noqa`, `# type: ignore`,
+  `eslint-disable-next-line`, `@ts-expect-error`, `# shellcheck` and `//go:build`.
+- Shebangs, and encoding or mode lines that a tool reads.
+- Generated and vendored files. Do not edit their comments.
+- Strings are not comments: `#` in a here-document, a template, Markdown or a regex.
 
 ## Existing comments
 
-Never add one. When you change a line that carries a comment, delete the comment;
-if it held a real *why* that isn't written down, move it to the docs first. Don't
-sweep untouched files unless asked.
+When you change a line or a block that has a comment, delete the comment. If it
+gives a reason that is not in the docs, move the reason to the docs first. Do not
+remove comments from files that you do not change.
 
 ## Before you commit
 
-Check the lines you added, not the whole repo:
+Check the lines that you added:
 
 ```bash
-git diff --cached -U0 | grep -E '^\+(#|.*(\s#|//|/\*|\*/|<!--|"""|'"'''"'))'
+git diff HEAD -U0 | grep -E '^\+(#|.*(\s#|//|/\*|\*/|<!--|"""|'"'''"'))'
 ```
 
-Every hit is either an allowed directive, a string, or a comment to remove. Rename or
-extract until the code reads without it, and move any *why* to the docs.
+Each hit is an allowed line, a string or a comment to remove. If the project has a
+comment checker or a lint rule for this, run it instead.
 
-If the project already has a comment checker or a lint rule for this, run that
-instead and leave the grep.
-
-## Sweeping a change
-
-For a whole diff or a set of files, use the `comment-reviewer` agent
-(`mskills:comment-reviewer` in Claude Code) and give it the scope. It removes the
-comments and writes their reasons into the docs; you make the renames it suggests.
+To clean all comments out of a diff or a set of files, use the `comment-reviewer`
+agent (`mskills:comment-reviewer`).
