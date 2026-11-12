@@ -11,7 +11,7 @@ python3 -I evals/run.py --arm A --arm B=/path/to/mskills [--case NAME] [--set de
 python3 -I evals/run.py --regrade evals/results/<timestamp>
 ```
 
-- Arm `A` (no path) disables the installed `mskills@mskills` plugin.
+- Each agent runs with a clean config folder that has only your login (`.credentials.json`) and no MCP servers, so it does not see your global skills, plugins or `CLAUDE.md`. Arm `A` (no path) has no mskills.
 - Arm `NAME=PATH` loads the plugin from `PATH`. Use a git worktree to test an older
   commit.
 - The agent runs with `--permission-mode bypassPermissions` in a folder under `/tmp`.

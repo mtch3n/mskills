@@ -16,7 +16,6 @@ import tempfile
 EVALS = pathlib.Path(__file__).resolve().parent
 REPO = EVALS.parent
 SESSION_COST = REPO / "skills" / "cost-aware" / "scripts" / "session-cost.py"
-DISABLE_INSTALLED = json.dumps({"enabledPlugins": {"mskills@mskills": False}})
 JUDGE_MODEL = "sonnet"
 
 
@@ -32,19 +31,17 @@ def config_dir():
 
 
 def eval_config_dir():
-    folder = pathlib.Path(tempfile.gettempdir()) / "mskills-eval-config"
+    folder = pathlib.Path(tempfile.gettempdir()) / "mskills-eval-clean-config"
     folder.mkdir(exist_ok=True)
-    for entry in config_dir().iterdir():
-        link = folder / entry.name
-        if entry.name == "CLAUDE.md" or link.is_symlink() or link.exists():
-            continue
-        link.symlink_to(entry)
+    link = folder / ".credentials.json"
+    if not link.is_symlink():
+        link.symlink_to(config_dir() / ".credentials.json")
     return folder
 
 
 def transcript_path(workdir, session_id):
     slug = re.sub(r"[^A-Za-z0-9]", "-", str(workdir))
-    return config_dir() / "projects" / slug / f"{session_id}.jsonl"
+    return EVAL_CONFIG / "projects" / slug / f"{session_id}.jsonl"
 
 
 EVAL_CONFIG = None
@@ -74,8 +71,8 @@ def claude(prompt, cwd, model, max_turns, timeout, plugin_dir=None):
         "--model", model,
         "--max-turns", str(max_turns),
         "--output-format", "json",
-        "--settings", DISABLE_INSTALLED,
         "--permission-mode", "bypassPermissions",
+        "--strict-mcp-config",
     ]
     if plugin_dir:
         command += ["--plugin-dir", str(plugin_dir)]

@@ -17,11 +17,16 @@ FACTS = {
     "billing-flag": "A flag that guards a billing change needs finance sign-off before it is removed.",
 }
 
-STRENGTH = (
-    "Compared with the original, the rewrite keeps the strength of each statement: advice stays advice and is not "
-    "turned into a hard requirement, requirements stay requirements, 'usually' stays a typical case, and limits "
-    "such as 'only', 'at least' and 'up to' are kept."
-)
+STRENGTH = {
+    "strength-backup": "The check that the nightly backup finished stays advice and is not a required step. The rewrite adds no new prohibition, such as 'do not deploy before the backup is complete'.",
+    "strength-ops": "Telling the #ops channel stays advice and is not a required step.",
+    "strength-flags": "Keeping release flags for at least 48 hours stays advice or an expectation and is not a hard prohibition.",
+    "strength-canary": "Stopping and rolling back the deploy when the canary health check fails in the first 10 minutes stays a requirement.",
+    "strength-escalation": "Escalating larger problems to the platform team stays a requirement.",
+    "strength-hedges": "Possibilities stay possibilities: the backup usually finishes around 02:30 UTC, a rollback without a fresh backup can lose up to 24 hours of data (not certainly), and small blips may be ignored.",
+}
+
+NOTE = "Judge only this statement. A sentence that starts with a verb is a command. 'We recommend' is advice. In STE, 'can' is the correct word for a possibility and does not make it stronger."
 
 
 def grade(run):
@@ -31,9 +36,8 @@ def grade(run):
     metrics = ste_metrics(text)
     grades = [{"name": "ste-errors", "passed": metrics["errors_per_100_words"] <= 1.0, "weight": 2, "metrics": metrics}]
     criteria = {name: f"The rewritten document says this: {fact}" for name, fact in FACTS.items()}
-    criteria["strength-kept"] = STRENGTH
+    criteria.update({name: f"Compared with the original: {statement} {NOTE}" for name, statement in STRENGTH.items()})
     verdicts = run.judge(criteria, f"ORIGINAL DOCUMENT:\n{original}\n\nREWRITTEN DOCUMENT (grade this one):\n{text}")
     for name, verdict in verdicts.items():
-        weight = 2 if name == "strength-kept" else 1
-        grades.append({"name": name, "passed": verdict["passed"], "weight": weight, "detail": verdict["reason"]})
+        grades.append({"name": name, "passed": verdict["passed"], "weight": 1, "detail": verdict["reason"]})
     return grades

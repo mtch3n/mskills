@@ -15,11 +15,14 @@ FACTS = {
     "write-cap": "Raised limits never apply to write endpoints, which stay at 60 requests per minute.",
 }
 
-STRENGTH = (
-    "Compared with the original, the rewrite keeps the strength of each statement: 'can lead to' and 'might be granted' "
-    "stay possibilities and do not become certain, expectations stay expectations, and limits such as 'up to', 'only after' "
-    "and 'never' are kept."
-)
+STRENGTH = {
+    "strength-limit": "Staying under 600 requests per minute stays an expectation for clients.",
+    "strength-retry": "Honoring Retry-After stays an expectation or advice for callers, and immediate retries stay discouraged.",
+    "strength-suspension": "Suspension after repeated violations stays a possibility and is not certain.",
+    "strength-raised": "A raised limit stays a possibility that can be granted and is not a right.",
+}
+
+NOTE = "Judge only this statement. A sentence that starts with a verb is a command. 'We recommend' is advice. In STE, 'can' is the correct word for a possibility and does not make it stronger."
 
 
 def grade(run):
@@ -29,8 +32,8 @@ def grade(run):
     metrics = ste_metrics(text)
     grades = [{"name": "ste-errors", "passed": metrics["errors_per_100_words"] <= 1.0, "weight": 2, "metrics": metrics}]
     criteria = {name: f"The rewritten document says this: {fact}" for name, fact in FACTS.items()}
-    criteria["strength-kept"] = STRENGTH
+    criteria.update({name: f"Compared with the original: {statement} {NOTE}" for name, statement in STRENGTH.items()})
     verdicts = run.judge(criteria, f"ORIGINAL DOCUMENT:\n{original}\n\nREWRITTEN DOCUMENT (grade this one):\n{text}")
     for name, verdict in verdicts.items():
-        grades.append({"name": name, "passed": verdict["passed"], "weight": 2 if name == "strength-kept" else 1, "detail": verdict["reason"]})
+        grades.append({"name": name, "passed": verdict["passed"], "weight": 1, "detail": verdict["reason"]})
     return grades
