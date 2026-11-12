@@ -25,8 +25,11 @@ uv run --script <base>/scripts/ui-antislop.py <page> [<page> ...] --stress --int
 
 - A page is a URL or a local HTML file. Give every page that uses the part you
   changed.
-- Run it one time before you change the code, to find every problem on the page,
-  and one time when you think that you are done.
+- Run it one time before you change the code, to find every problem on the page.
+  If a hook already gave the findings for the page, that is the run before. Do not
+  run it again before you edit.
+- Make all the fixes, then run it one time when you think that you are done. Run it
+  again only to check the fix of an `F` that stays. Each run takes 10-20 seconds.
 - `python3 <base>/scripts/slop-lint.py [<file> ...]` checks the source for raw colors
   and slop. With no file, it checks the lines that you added. In a shadcn project, it
   also reports each native element that has a shadcn component.

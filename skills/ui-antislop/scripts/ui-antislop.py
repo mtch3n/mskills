@@ -71,10 +71,11 @@ def page_label(url):
 def load(page, url, width, height=900):
     page.set_viewport_size({"width": width, "height": height})
     page.goto(url, wait_until="load")
-    try:
-        page.wait_for_load_state("networkidle", timeout=5000)
-    except PlaywrightTimeout:
-        pass
+    if not url.startswith("file:"):
+        try:
+            page.wait_for_load_state("networkidle", timeout=5000)
+        except PlaywrightTimeout:
+            pass
     page.add_style_tag(content=STILL)
     page.evaluate("document.fonts.ready.then(() => true)")
 
@@ -409,7 +410,6 @@ def main():
                         by_kind.setdefault(f["kind"], []).append(f)
                     for kind, group in by_kind.items():
                         print(f"  F {kind} ×{len(group)}: {group[0]['message']}" + (f" | {group[0]['elements'][0]}" if group[0]["elements"] else ""))
-                    load(page, url, width, args.height)
         browser.close()
     differences = page_differences(reports)
     if differences:
