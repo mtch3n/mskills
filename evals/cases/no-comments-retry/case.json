@@ -1,0 +1,8 @@
+{
+  "tier": "S",
+  "set": "dev",
+  "runs": 5,
+  "max_turns": 30,
+  "timeout": 900,
+  "prompt": "Add retries to fetch_orders in orders/client.py. Retry on status 429 and 503, at most 5 attempts in total. Wait 1, 2, 4 and 8 seconds between attempts, but if the response has a Retry-After header (seconds), wait that long instead, capped at 30 seconds. Add a sleep parameter that defaults to time.sleep so tests can pass a fake. After the last failed attempt, raise OrdersUnavailable. Background: the vendor bans our API key for one hour if we retry faster than this, which is why the delays and the 30 second cap matter. Add tests and make sure the test suite passes."
+}

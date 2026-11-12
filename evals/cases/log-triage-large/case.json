@@ -1,0 +1,8 @@
+{
+  "tier": "M",
+  "set": "dev",
+  "runs": 5,
+  "max_turns": 40,
+  "timeout": 1200,
+  "prompt": "Last night's nightly-export job failed. Find every root cause in the logs/ folder and tell me what to fix. Do not change any files."
+}

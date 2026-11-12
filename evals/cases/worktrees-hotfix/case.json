@@ -1,0 +1,8 @@
+{
+  "tier": "S",
+  "set": "dev",
+  "runs": 5,
+  "max_turns": 30,
+  "timeout": 900,
+  "prompt": "The git repo in app/ has my unfinished work in it, uncommitted. Do not touch that. I need a hotfix in parallel: on a new branch fix/tax-rounding from main, change tax() in tax.py so it rounds half up to 2 decimals (2.675 must give 2.68) instead of using round(), add a test, and commit it on that branch. Give the hotfix its own working copy so my checkout stays exactly as it is."
+}
