@@ -66,7 +66,9 @@ only when the reader does them at the same time.
 ## Warnings, cautions and notes
 
 - A warning or a caution starts with a clear command. The reason comes after it. Use
-  20 words or fewer in each sentence.
+  20 words or fewer in each sentence. Write a warning only for a requirement in the
+  original. Advice with a risk as its reason stays advice ("We recommend that you
+  ...").
 - A note gives information. It does not give an instruction. Use 25 words or fewer in
   each sentence.
 

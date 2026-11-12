@@ -22,9 +22,24 @@ A rewrite must keep the meaning. Do not do these things:
 - Do not invent an actor to remove a passive. If you do not know who did it, keep the
   passive in a description.
 - Do not drop an object, a condition, a number or a limit.
+- Do not add a prohibition or a step that the original does not have.
 
 If a rule and the meaning conflict, keep the meaning and tell the reader which rule
 you did not apply.
+
+## Advice is not a command
+
+STE has no "should" or "may". Do not change advice into a command to remove them.
+"Advisable", "ideally", "ought to", "should" and "it is a good idea" are advice. Write
+advice with "we recommend":
+
+- "Ideally, tell #ops." becomes "We recommend that you tell the #ops channel."
+- "Flags ought to stay for 48 hours." becomes "We recommend that flags stay for at
+  least 48 hours."
+
+In a procedure, keep a recommended step out of the required steps. Put it in its own
+list, or start the step with "We recommend that you". "Must", "has to", "is supposed
+to" and "only" are requirements. Keep them as commands.
 
 ## Core rules
 
@@ -40,7 +55,9 @@ you did not apply.
 8. Use 20 words or fewer in a procedure sentence. Use 25 words or fewer in a
    description sentence. Use 6 sentences or fewer in a paragraph.
 9. Do not use semicolons.
-10. Write a warning as a command, then give the reason.
+10. Write a warning as a command, then give the reason. Only a requirement in the
+    original is a warning. Advice with a risk as its reason stays advice:
+    "We recommend that you do X. If you do not do X, Y can occur."
 
 For word counts, verb forms, approved *-ing* words, noun clusters and notes, read
 `references/rules.md`.
@@ -78,4 +95,6 @@ After:
 >
 > 1. Start the migration.
 > 2. Close all connections to the old database.
-> 3. On the dashboard, make sure that the number of connections is 0.
+>
+> We recommend that you look at the dashboard to make sure that the number of
+> connections is 0.
