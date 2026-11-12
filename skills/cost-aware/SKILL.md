@@ -45,8 +45,14 @@ small and the turns few.
 ## Match the worker to the job
 
 - Mechanical steps (capture, walk, compare, count): a script, no model.
-- Scanning and sorting (read these files, list the hits): a cheaper, faster model.
-- Judgment (decide, design, fix, review): the main model.
+- Scanning and sorting (read these files, list the hits, fetch a page): `haiku`.
+- Building and editing code to a clear brief: `sonnet`.
+- Judgment (decide, design, review, a hard diagnosis): `opus`, or keep it in the
+  main session.
+
+Set `model` on every subagent call; a subagent without one runs on the main
+model. A fork takes no model. The `agent-model` hook denies a subagent call
+without a `model`.
 
 ## When context is already large
 
