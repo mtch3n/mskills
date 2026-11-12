@@ -7,7 +7,7 @@ import sys
 from datetime import datetime
 from pathlib import Path
 
-PROJECTS = Path.home() / ".claude" / "projects"
+PROJECTS = Path(os.environ.get("CLAUDE_CONFIG_DIR") or Path.home() / ".claude") / "projects"
 AGENT_TEXT_LIMIT = 1500
 RUN_INPUT_LIMIT = 200
 RUN_RESULT_LIMIT = 160

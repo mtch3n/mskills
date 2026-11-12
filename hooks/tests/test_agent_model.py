@@ -21,6 +21,13 @@ class AgentModelHookTest(unittest.TestCase):
     def test_allows_a_subagent_with_a_model(self):
         self.assertIsNone(run({"tool_name": "Agent", "tool_input": {"prompt": "scan", "model": "haiku"}}))
 
+    def test_allows_a_plugin_agent_that_sets_its_own_model(self):
+        self.assertIsNone(run({"tool_name": "Agent", "tool_input": {"subagent_type": "mskills:session-reader", "prompt": "read"}}))
+
+    def test_denies_a_plugin_agent_without_its_own_model(self):
+        out = run({"tool_name": "Agent", "tool_input": {"subagent_type": "mskills:comment-reviewer", "prompt": "clean"}})
+        self.assertEqual(out["hookSpecificOutput"]["permissionDecision"], "deny")
+
     def test_allows_a_fork_without_a_model(self):
         self.assertIsNone(run({"tool_name": "Agent", "tool_input": {"subagent_type": "fork", "prompt": "go"}}))
 

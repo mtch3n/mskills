@@ -1,0 +1,9 @@
+{
+  "tier": "M",
+  "set": "dev",
+  "runs": 5,
+  "max_turns": 40,
+  "timeout": 1200,
+  "prompt": "Recall the nightly export retry work from my earlier Claude Code sessions in this project. Tell me what was decided, what is really done in the code now, and what is left. Then give me a handoff prompt for a new session. Do not change any files.",
+  "plugin_prompt": "/mskills:recall the nightly export retry work from my earlier Claude Code sessions in this project. Tell me what was decided, what is really done in the code now, and what is left. Then give me a handoff prompt for a new session. Do not change any files."
+}

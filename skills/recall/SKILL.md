@@ -40,14 +40,23 @@ first prompt. Drop ones that only mention a word in passing. Say the task and th
 sessions you kept, one line each with date and title, before reading. Ask only if
 you can't tell which sessions belong.
 
-## 3. Read with the session-reader agent
+## 3. Read the timelines
 
-Spawn `mskills:session-reader` with the task in the user's words, the session ids
-and the script's full path. For more than two sessions, spawn one reader per session
-in parallel. Each returns the task's claims sorted into user said, agent said, done,
-superseded and open. Merge them by time: a later session's decision supersedes an
-earlier one's. Don't read the raw timelines in the main session; keeping them out is
-the point.
+Measure the timelines first:
+
+```bash
+python3 -I <base>/scripts/session-timeline.py --session <id> [<id> ...] | wc -c
+```
+
+- **30,000 characters or fewer:** read them in this session. Sort what belongs to the
+  task into user said, agent said, done, superseded and open, as
+  `<base>/../../agents/session-reader.md` describes.
+- **More than 30,000:** spawn `mskills:session-reader` with the task in the user's
+  words, the session ids and the script's full path. Spawn one reader per session, in
+  parallel. Each returns the sorted claims.
+
+Merge by time: a later session's decision supersedes an earlier one's. Never read the
+raw `.jsonl` files.
 
 ## 4. Check every claim
 

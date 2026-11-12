@@ -207,7 +207,7 @@ def run_one(case_dir, case, arm_name, agent, plugin_dir, index, out_root, model)
         shutil.copytree(fixture, workdir, dirs_exist_ok=True)
     setup = case_dir / "setup.py"
     if setup.exists():
-        subprocess.run([sys.executable, "-I", str(setup)], cwd=workdir, check=True)
+        subprocess.run([sys.executable, "-I", str(setup)], cwd=workdir, check=True, env={**os.environ, "CLAUDE_CONFIG_DIR": str(EVAL_CONFIG)})
     subprocess.run(["git", "init", "-q"], cwd=workdir)
     subprocess.run(["git", "add", "-A"], cwd=workdir)
     subprocess.run(["git", "-c", "user.name=eval", "-c", "user.email=eval@example.com", "commit", "-q", "-m", "fixture"], cwd=workdir)
@@ -216,7 +216,8 @@ def run_one(case_dir, case, arm_name, agent, plugin_dir, index, out_root, model)
     if agent == "codex":
         reply, codex_calls = codex(case["prompt"], workdir, None, case.get("timeout", 900), plugin_dir)
     else:
-        reply = claude(case["prompt"], workdir, case.get("model", model), case.get("max_turns", 30), case.get("timeout", 900), plugin_dir)
+        prompt = case.get("plugin_prompt", case["prompt"]) if plugin_dir else case["prompt"]
+        reply = claude(prompt, workdir, case.get("model", model), case.get("max_turns", 30), case.get("timeout", 900), plugin_dir)
     seconds = (datetime.datetime.now() - started).total_seconds()
     stop_leftovers(workdir, workdir.name)
     session_id = reply.get("session_id")

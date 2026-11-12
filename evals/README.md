@@ -39,6 +39,7 @@ score, cost, turns, peak context, cache reads and images for each case and arm.
 | `worktrees-hotfix` | S | dev | A hotfix on a new branch while the main checkout has uncommitted work. Checks the worktree folder and name, the main checkout kept, and the fix committed on the branch. |
 | `log-triage-large` | M | dev | Five root causes in 220,000 log lines with thousands of recovered errors and stack traces. Also records the size of the tool output. |
 | `ship-check-shop-large` | L | dev | The shop with 22 pages and defects that show only in German, on a phone, after sign-in or after late content. Measures the fixes with its own Playwright script. Needs `uv`. |
+| `recall-export-retry` | M | dev | Recall one task from four seeded sessions of about 280 KB each. A later decision replaces an earlier one, one agent claim is false, one agent choice was never confirmed, and one open item hides in a session about another task. Arm B gets `plugin_prompt` (`/mskills:recall ...`). |
 | `holdout-billing` | M | holdout | "Clean up the Billing page" with no defect named. The page has 6 defects. Examples are plan buttons that do not align, a table that does not fit a phone and a row menu that a box cuts off. The grader does not use `ui-antislop`. It measures the page with its own Playwright script. Needs `uv`. |
 | `holdout-shadcn-form` | S | holdout | Add a due date and a status field to a form in a shadcn project. Checks that the agent uses the shadcn date picker and select, and not native elements or another library. Reads the source only. |
 | `holdout-compact-list` | M | holdout | "Too big and wide, the cards look weird, more compact." Checks the toolbar, the container, nested boxes, the card footer and the sidebar. Also checks that the page is not too compact. It uses its own Playwright script. Needs `uv`. |
@@ -53,10 +54,13 @@ Do not look at holdout results while you change a skill. Run them one time at th
 
 Make `cases/<name>/` with these files:
 
-- `case.json`: `prompt`, `tier`, `set`, `runs`, `max_turns`, `timeout`, and `fixture`
-  if the files come from `fixtures/`.
+- `case.json`: `prompt`, `tier`, `set`, `runs`, `max_turns`, `timeout`, `fixture`
+  if the files come from `fixtures/`, and `plugin_prompt` if the arms with a plugin
+  get a different prompt, for example a slash command.
 - `fixture/`: files that are copied into the work folder.
 - `setup.py` (optional): runs in the work folder before the agent starts.
+  `CLAUDE_CONFIG_DIR` points to the agent's config folder, for example to seed past
+  sessions.
 - `grade.py`: a `grade(run)` function that returns a list of
   `{"name", "passed", "weight", "detail", "metrics"}`. Use `run.workdir`, `run.final`,
   `run.diff`, `run.calls` and `run.judge({name: criterion}, evidence)`.
