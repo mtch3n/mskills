@@ -8,10 +8,18 @@ UI = (".css", ".scss", ".sass", ".less", ".html", ".htm", ".jsx", ".tsx", ".vue"
 LINT = pathlib.Path(__file__).resolve().parent.parent / "skills" / "ui-antislop" / "scripts" / "slop-lint.py"
 
 
-def written(data):
-    parts = [data.get("new_string") or "", data.get("content") or ""]
-    parts += [edit.get("new_string") or "" for edit in data.get("edits") or []]
-    return {line.strip() for part in parts for line in part.splitlines() if line.strip()}
+def written(path, data):
+    text = pathlib.Path(path).read_text(errors="replace")
+    if data.get("content") is not None:
+        return set(range(1, text.count("\n") + 2))
+    numbers = set()
+    for part in [data.get("new_string") or ""] + [edit.get("new_string") or "" for edit in data.get("edits") or []]:
+        start = text.find(part) if part.strip() else -1
+        while start != -1:
+            first = text.count("\n", 0, start) + 1
+            numbers.update(range(first, first + part.count("\n") + 1))
+            start = text.find(part, start + 1)
+    return numbers
 
 
 def main():
@@ -25,7 +33,7 @@ def main():
         return 0
     if subprocess.run(["git", "-C", str(pathlib.Path(path).parent), "rev-parse"], capture_output=True).returncode != 0:
         return 0
-    lines = {line[:120] for line in written(data)}
+    lines = written(path, data)
     if not lines:
         return 0
     try:
@@ -34,13 +42,13 @@ def main():
         return 0
     found = []
     for line in result.stdout.splitlines()[:-1]:
-        text = line.split(" | ", 1)[1] if " | " in line else ""
-        if text in lines or ": shadcn-file: " in line or ": data-table: " in line:
+        place = line.split(": ", 1)[0]
+        number = place.rsplit(":", 1)[-1]
+        if (number.isdigit() and int(number) in lines) or ": shadcn-file: " in line:
             found.append(line)
-    allowed = [line for line in result.stdout.splitlines() if line.startswith("allowed by DESIGN.md")]
     if not found:
         return 0
-    context = "slop-lint found these in the lines you just wrote. Fix them, or follow the project's rules if they allow it:\n" + "\n".join(found[:15] + allowed)
+    context = "slop-lint found these in the lines you just wrote. Fix them, or tell the user why the project needs them:\n" + "\n".join(found[:15])
     json.dump({"hookSpecificOutput": {"hookEventName": "PostToolUse", "additionalContext": context}}, sys.stdout)
     return 0
 

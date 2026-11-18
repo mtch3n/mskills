@@ -10,12 +10,13 @@
 | `W` layout | `edge`, `gap`, `row-height`, `row-top`, `row-bottom`, `row-centre`, `icon-centre`, `baseline`, `off-centre`, `sticks-out`, `proximity`, `choice-centre`, `orphan-wrap` | Fix it, or write in the report why it is correct. A gap of 1 to 4 px is almost never correct. |
 | `W` components | `inconsistent`, `card-actions`, `nested-radius`, `scale`, `drift`, `off-token`, `double-border`, `cramped-padding`, `control-font`, `target-size` | Fix it, or give the reason. |
 | `W` text | `line-length`, `small-text`, `tight-text`, `headings`, `truncated`, `early-ellipsis`, `long-label` | Fix it, or give the reason. |
-| `W` words | `restates`, `chatty`, `text-heavy`, `wall-of-text`, `long-paragraph` | Remove the text. Do not write it again in other words. |
+| `W` words | `restates`, `chatty`, `text-heavy`, `wall-of-text`, `long-paragraph` | List it for the user. Do not change the text. |
 | `W` tables | `table-column`, `numeric-align`, `empty-cell`, `long-table` | Fix it, or give the reason. |
 | `W` cursor | `cursor-lie`, `cursor-mixed` | Fix it, or give the reason. |
 | `W` motion | From `--interact`: `focus-shift`, `hover-shift` | Fix it, or give the reason. |
-| `S` smell | `card-in-card`, `tinted-box`, `accent-stripe`, `eyebrow`, `subtitles`, `pills`, `border-shadow`, `icon-tile`, `card-grid`, `helper-text`, `heavy-heading`, `shouting` | Compare it with the rules. Remove it if no rule asks for it. |
-| `S` smell | `gradient`, `gradient-text`, `glow`, `glass`, `purple`, `emoji`, `hues`, `icon-sets`, `native-tooltip`, `stock-copy`, `filler`, `cursor-zoo` | Compare it with the rules. Remove it if no rule asks for it. |
+| `S` smell | `card-in-card`, `tinted-box`, `accent-stripe`, `eyebrow`, `pills`, `border-shadow`, `icon-tile`, `card-grid`, `heavy-heading` | Compare it with the rules. Remove it if no rule asks for it. |
+| `S` smell | `gradient`, `gradient-text`, `glow`, `glass`, `purple`, `hues`, `icon-sets`, `native-tooltip`, `cursor-zoo`, `motion` | Compare it with the rules. Remove it if no rule asks for it. |
+| `S` words | `subtitles`, `helper-text`, `shouting`, `emoji`, `stock-copy`, `filler` | List it for the user. Do not change the text. |
 
 
 With `--verbose`, the `layout`, `type`, `shape` and `colour` lines show the values that
@@ -40,20 +41,14 @@ the page uses. Many different values for one property show drift.
 - `--verbose` also prints the layout values, the census and the image paths.
 - The exit code is 1 if there is a `fail`.
 
-## Hooks in Claude Code
+## Hook in Claude Code
 
-- If the user asks for an open task on a page, for example "polish the Team page",
-  a hook measures the page with `--interact` before you start. It finds the page from
-  its name in the message or from the `ui-antislop:` line in `DESIGN.md`. It gives you
-  the problems that are already on the page. Fix them in the same pass. The list is
-  not complete. Also read the page and its styles yourself.
-- After each edit of a UI file, a hook runs `slop-lint` on the lines that you wrote.
+- After each edit of a UI file in a git repository, a hook runs `slop-lint` on the
+  lines that you changed.
 - The text after `@` in a finding is the CSS rule that sets the value, with its file
   and line.
-- When the user's message corrects a UI, a hook tells you to write the rule in the
-  rules file.
 
-Other agents do not run these hooks. Run the same commands yourself.
+Other agents do not run this hook. Run `slop-lint` yourself.
 
 ## Other browsers
 

@@ -4,7 +4,7 @@ import subprocess
 
 HERE = pathlib.Path(__file__).resolve().parent
 UI_FILES = sorted(p.name for p in (HERE / "fixture" / "components" / "ui").iterdir())
-ALLOWED = re.compile(r"^(app/.+\.tsx?|components/(?!ui/).+\.tsx?|components/ui/(?!(" + "|".join(re.escape(n) for n in UI_FILES) + r")$)[\w-]+\.tsx|DESIGN\.md|package\.json|pnpm-lock\.yaml)$")
+ALLOWED = re.compile(r"^(app/.+\.tsx?|components/(?!ui/).+\.tsx?|components/ui/(?!(" + "|".join(re.escape(n) for n in UI_FILES) + r")$)[\w-]+\.tsx|package\.json|pnpm-lock\.yaml)$")
 NATIVE = re.compile(r"<(input|select|textarea|button|label)\b|type=[\"'{ ]*[\"']?(date|datetime-local)\b")
 OTHER_DATE = re.compile(r"""from\s+["'](react-datepicker|react-date-picker|react-datetime[\w-]*|react-calendar|flatpickr|react-flatpickr|@mui/[\w/-]+|antd|@mantine/[\w-]+)["']""")
 

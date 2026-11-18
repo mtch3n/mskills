@@ -4,7 +4,7 @@ import re
 import subprocess
 
 HERE = pathlib.Path(__file__).resolve().parent
-ALLOWED = re.compile(r"^(site/[\w-]+\.css|site/settings\.html|DESIGN\.md)$")
+ALLOWED = re.compile(r"^(site/[\w-]+\.css|site/settings\.html)$")
 LINKS = ["Profile", "Password", "Notifications", "Members", "Billing", "Domains", "API keys", "Webhooks"]
 
 

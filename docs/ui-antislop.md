@@ -76,8 +76,8 @@ measurable rules from WCAG 2.2 and the design systems that `ui-antislop` now use
 
 Linters for design systems (stylelint strict values, the Primer and Atlassian
 plugins, the Tailwind plugin) all report raw values in place of tokens. `slop-lint`
-does the same for colors and sizes. Like those linters, it lets the project permit a
-rule. The reason goes in `DESIGN.md`.
+does the same for colors and sizes. It has no setting to permit a rule: the agent
+tells the user why the project needs the value.
 
 We did not find a tool that measures edges of siblings, gaps, table columns or
 clipped text on the rendered page. Overflow, contrast and target size are common.
@@ -110,13 +110,12 @@ design-taste-frontend. We read both on 2026-10-31.
 - Neither measures the edges of siblings, gaps, table columns, icon centers, clipped
   text, rows of chips, the differences between pages, or a baseline. `ui-antislop`
   does these.
-- Neither records the user's corrections.
 
 Some of their rules disagree. impeccable keeps card radii at 12 to 16 px and permits
 a soft shadow. design-taste-frontend calls one 12 to 16 px radius on everything a
 tell, fails resting shadows and thin borders, and fails a page with little motion.
 These rules are for marketing pages. On an app screen they conflict with the borders
-and the quiet surfaces that the app needs. Thus the project's `DESIGN.md` wins, and
+and the quiet surfaces that the app needs. Thus the project's UI rules win, and
 an app screen does not get the marketing rules.
 
 On 2026-11-17 we read a third skill, unslop. It is a prompt only: the model reads
@@ -251,6 +250,31 @@ false starts, and fixed them:
   baseline read every HTML file under the folder, also the Rust documentation. The
   lint after an edit also ran on reports and scratch files outside a project. Both
   hooks now run only inside a git repository.
+
+On 2026-11-18 the user asked for two more limits:
+
+- The plugin writes no rules file. It does not make `DESIGN.md`, and it does not
+  write to `CLAUDE.md` or `AGENTS.md`. The page list and the lint permits that used a
+  rules file are removed.
+- The plugin does not change the words on a page. A finding about words goes to the
+  user in the report. The user decides about the content.
+
+The same day, two reviews (Codex with gpt-6-astra, and Fable) read the hooks. Both
+found that the two `UserPromptSubmit` hooks guessed the task from words in the
+prompt. They started on "the page table query is too slow" and on "do not polish
+the Team page", and missed "make the buttons smaller" and every prompt that is not
+English. The baseline also found only static HTML pages. Thus both hooks are
+removed.
+
+The skill description starts the skill, and the skill tells the agent to
+measure before and after. The only UI hook now is the lint after an edit. It uses a
+fact, the edited file, and not a guess. It now keeps the findings on the edited line
+numbers, so a change to part of a line is found.
+
+The reviews also found noise in the lint. The lint no longer reports emoji and
+marketing words, because these are words for the user to decide. It does not report
+a title on `abbr` or `iframe`, a neutral shadow, a stripe in the border color, a
+spinner, or `#1234` in text.
 
 ## Limits
 

@@ -699,13 +699,13 @@
     }
     for (const row of rows.values()) {
       if (row.length < 2 || Math.max(...row.map((k) => width(k.b))) > 1.2 * Math.min(...row.map((k) => width(k.b)))) continue;
-      const actions = row.map((card) => nodes.filter((n) => n.control && !n.hidden && n.el !== card.el && card.el.contains(n.el)).pop());
+      const actions = row.map((card) => nodes.filter((n) => n.control && !n.hidden && n.el !== card.el && card.el.contains(n.el)).sort((a, b) => a.b.y2 - b.b.y2).pop());
       if (actions.some((a) => !a)) continue;
       const bottoms = actions.map((a) => tenth(a.b.y2));
       const cardBottoms = row.map((k) => k.b.y2);
       if (Math.max(...cardBottoms) - Math.min(...cardBottoms) <= 1 && Math.max(...bottoms) - Math.min(...bottoms) > 1) add("warn", "card-actions", `the last controls of ${row.length} side-by-side boxes end at different heights: y=${[...new Set(bottoms)].join(" vs ")}`, actions.slice(0, 4), actions.slice(0, 4).map((a) => a.b));
       const diff = differences(actions).filter((d) => d.startsWith("radius") || d.startsWith("height") || d.startsWith("font size"));
-      if (diff.length) add("warn", "inconsistent", `the last controls of ${row.length} side-by-side boxes differ: ${diff.join(", ")}`, actions.slice(0, 4), actions.slice(0, 4).map((a) => a.b));
+      if (diff.length && new Set(actions.map((a) => a.tag)).size === 1 && !actions.some((a) => reported.has(a))) add("warn", "inconsistent", `the last controls of ${row.length} side-by-side boxes differ: ${diff.join(", ")}`, actions.slice(0, 4), actions.slice(0, 4).map((a) => a.b));
     }
   }
 
@@ -862,8 +862,8 @@
   const headings = visible.filter((n) => n.text && (/^H[1-3]$/.test(n.tag) || (px(n.cs.fontSize) >= 24 && Number(n.cs.fontWeight) >= 600)));
   smell("heavy-heading", (k) => `${k} heading(s) at weight 800 or more`, headings.filter((n) => Number(n.cs.fontWeight) >= 800));
   const shortText = (n) => n.own && n.words <= 12 && (headings.includes(n) || n.control || insideControl(n) || /^(LABEL|LEGEND|TH|SUMMARY)$/.test(n.tag));
-  smell("shouting", (k) => `${k} heading(s), label(s) or button(s) with "!" or a greeting`, visible.filter((n) => shortText(n) && (/!\s*\S{0,3}\s*$/.test(n.own) || /^(?:welcome back|hi|hey|hello)\b/i.test(n.own.trim()))));
-  const tracked = visible.filter((n) => n.own && px(n.cs.fontSize) < 16 && px(n.cs.letterSpacing) < 0);
+  smell("shouting", (k) => `${k} heading(s), label(s) or button(s) with "!" or a greeting`, visible.filter((n) => shortText(n) && (/(?<![!=<>])!\s*$/.test(n.own) || /^(?:welcome back|hi|hey|hello)(?:[,!\s]|$)/i.test(n.own.trim()))));
+  const tracked = visible.filter((n) => n.own && px(n.cs.fontSize) < 16 && px(n.cs.letterSpacing) < -0.02 * px(n.cs.fontSize));
   if (tracked.length) add("warn", "tight-text", `${tracked.length} small text(s) with negative letter spacing, e.g. ${tracked[0].cs.letterSpacing} at ${tracked[0].cs.fontSize}`, tracked.slice(0, 4), tracked.slice(0, 4).map((n) => n.text));
   const rounder = [];
   for (const n of visible) {
@@ -872,7 +872,7 @@
     while (p && !card(p)) p = p.parent >= 0 ? nodes[p.parent] : null;
     if (!p) continue;
     const dx = n.b.x1 - p.b.x1, dy = n.b.y1 - p.b.y1, outer = px(p.cs.borderTopLeftRadius), inner = px(n.cs.borderTopLeftRadius);
-    if (dx >= 0 && dy >= 0 && dx <= 16 && dy <= 16 && outer > 0 && inner > outer + 0.5) rounder.push([n, p, inner, outer]);
+    if (dx >= 0 && dy >= 0 && dx <= 16 && dy <= 16 && outer > 0 && inner > Math.max(outer - Math.min(dx, dy), 4) + 2) rounder.push([n, p, inner, outer]);
   }
   if (rounder.length) add("warn", "nested-radius", `${rounder.length} inner box(es) rounder than the box around them, e.g. ${rounder[0][2]}px inside ${rounder[0][3]}px; the inner radius is the outer radius minus the gap`, rounder.slice(0, 4).map((r) => r[0]), rounder.slice(0, 4).map((r) => r[0].b));
   smell("eyebrow", (k) => `${k} small upper-case label(s) above a heading`, visible.filter((n) => {

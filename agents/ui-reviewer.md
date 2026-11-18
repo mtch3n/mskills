@@ -13,8 +13,7 @@ project's rules. Do not change a file.
 
 ## 1. Collect the evidence
 
-1. Read the project's rules: `DESIGN.md`, or the UI section of `CLAUDE.md` or
-   `AGENTS.md`.
+1. Read the project's rules: the UI section of `CLAUDE.md` or `AGENTS.md`.
 2. Run `uv run --script <ui-antislop>/scripts/ui-antislop.py <pages> --out <dir>`. Do not
    report its findings again. The agent that called you fixes them.
 3. Open the screenshot `<dir>/<page>-1280.png` one time. Open the `390` screenshot
@@ -33,8 +32,8 @@ Answer each question for each page. Use the element and its text in each answer.
    not use?
 4. **Structure.** Are the groups correct? Is an item on a page where the user does not
    look for it? Is there a tab, a section or a control that has no task?
-5. **Rules.** Which part breaks a rule in the rules file, or a default rule in
-   `<ui-antislop>/references/slop.md`?
+5. **Rules.** Which part breaks a rule in the UI section of `CLAUDE.md`, or a
+   default rule in `<ui-antislop>/references/slop.md`?
 6. **Request.** Does the screen do what the user asked? Is there a change that the
    user did not ask for?
 

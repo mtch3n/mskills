@@ -10,7 +10,7 @@ HERE = pathlib.Path(__file__).resolve().parent
 SCRIPTS = HERE.parents[2] / "skills" / "ui-antislop" / "scripts"
 PAGES = ["team", "projects", "settings"]
 WIDTHS = [390, 1280]
-ALLOWED = re.compile(r"^(site/[\w-]+\.(css|html)|DESIGN\.md)$")
+ALLOWED = re.compile(r"^(site/[\w-]+\.(css|html))$")
 RAW = {"raw-colour", "palette-class"}
 LINK = "https://ledgerly.app/join/7f3a9c2e-design-team"
 CHIPS = {"team": ["Owner", "Admin", "Billing", "Viewer"], "projects": ["New", "Active", "Closed"]}
@@ -123,9 +123,6 @@ def grade(run):
         new += [f"{key[0]}@{key[1]}: {kind}" for kind in extra]
     grades.append(check("no-new-problems", not new, 1, "; ".join(new)))
 
-    rules = lines.get("DESIGN.md", [])
-    recorded = any(re.search(r"chip|copy|invite|em\b|rem\b|font size|font-size|min-width|phone|mobile|390", line, re.I) for line in rules)
-    grades.append(check("rule:recorded", recorded, 1, " | ".join(rules)[:300]))
 
     grades.append({"name": "metrics", "passed": True, "weight": 0, "metrics": {
         "fails_before": sum(f["severity"] == "fail" for k, r in before.items() if not k[2] for f in r["findings"]),

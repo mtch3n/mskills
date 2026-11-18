@@ -15,7 +15,7 @@ In the commands, `<ui-antislop>` is the `ui-antislop` folder next to this skill'
 
 ## 1. Before you design
 
-1. Read the rules: `DESIGN.md`, the UI section of `CLAUDE.md` or `AGENTS.md`, and the
+1. Read the rules: the UI section of `CLAUDE.md` or `AGENTS.md`, and the
    user's last messages about this screen. Write a short checklist of the rules that
    apply, for example "shadcn default theme, no brand colour in components, no card
    inside a card".
@@ -58,8 +58,8 @@ If you think that the screen needs one of these items, ask.
 
 ## 4. Words
 
-1. Read each sentence on the screen. If it does not help the next action or prevent a
-   mistake, remove it. Do not write it again in other words.
+1. Do not change the words that are already on the screen. If a sentence does not
+   help the next action or prevent a mistake, tell the user in the report.
 2. Name a control with its action, for example "Save". Do not write "Click here to
    save your changes".
 3. In an error, tell the problem and how to fix it.
@@ -81,10 +81,9 @@ If you think that the screen needs one of these items, ask.
 
 ## 6. When the user rejects the result
 
-1. Write the correction in the rules file in the user's words.
-2. Re-read your checklist from step 1. If the last change broke a rule, say so.
-3. Fix the cause on every screen, not only on the screen in the screenshot.
-4. Answer with the fix and a screenshot. Do not answer a UI complaint with a test
+1. Re-read your checklist from step 1. If the last change broke a rule, say so.
+2. Fix the cause on every screen, not only on the screen in the screenshot.
+3. Answer with the fix and a screenshot. Do not answer a UI complaint with a test
    report or a question about the process.
 
 ## Default rules

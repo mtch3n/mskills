@@ -9,7 +9,7 @@ HERE = pathlib.Path(__file__).resolve().parent
 UI_CHECK = HERE.parents[2] / "skills" / "ui-antislop" / "scripts" / "ui-antislop.py"
 PAGES = ["files", "shared", "settings"]
 WIDTHS = [390, 1280]
-ALLOWED = re.compile(r"^(site/[\w-]+\.(css|html)|DESIGN\.md)$")
+ALLOWED = re.compile(r"^(site/[\w-]+\.(css|html))$")
 CONTROL = re.compile(r"(^|>)(input|button)\d*$")
 
 
@@ -93,11 +93,6 @@ def grade(run):
     outside = sorted(path for path in changed_files(run.diff) if not ALLOWED.match(path))
     grades.append(check("scope:files", not outside, 1, ", ".join(outside)))
 
-    rules = added_lines(run.diff, "DESIGN.md")
-    nesting = any(re.search(r"card|box|surface", line, re.I) and re.search(r"inside|within|nest|wrap|in a ", line, re.I) for line in rules)
-    table = any(re.search(r"header|heading|column|\bth\b", line, re.I) and re.search(r"align|line up|lines up", line, re.I) for line in rules)
-    grades.append(check("rule:nesting-recorded", nesting, 1, " | ".join(rules)[:300]))
-    grades.append(check("rule:table-recorded", table, 1, " | ".join(rules)[:300]))
 
     warns_before = sum(len(r["findings"]) for r in before.values())
     warns_after = sum(len(r["findings"]) for r in after.values())

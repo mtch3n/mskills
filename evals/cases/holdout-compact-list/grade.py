@@ -4,7 +4,7 @@ import re
 import subprocess
 
 HERE = pathlib.Path(__file__).resolve().parent
-ALLOWED = re.compile(r"^(site/[\w-]+\.css|site/leads\.html|DESIGN\.md)$")
+ALLOWED = re.compile(r"^(site/[\w-]+\.css|site/leads\.html)$")
 LEADS = ["Ana Ferreira", "Tomas Lind", "Priya Nair", "Sam Okafor", "Jo Whitaker", "Mei Tanaka"]
 KEEP = [*LEADS, "Harbor Foods", "Contract ends in March.", "Call", "Email", "Export", "New lead", "This week"]
 STAGES = ["Pipeline", "Stages", "Contacted", "Proposal", "Won"]

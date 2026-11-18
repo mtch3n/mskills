@@ -35,6 +35,9 @@ it.
 
 ## Text
 
+The agent does not change the words. For a rule in this part, it lists the finding
+for the user, and the user decides.
+
 - Do not put a small upper-case label above a heading. `eyebrow`
 - Do not put a helper sentence under each heading. Make the UI explain itself. Keep
   a sentence only if it helps the next action or prevents a mistake, for example a
@@ -131,4 +134,3 @@ it.
 - Do not change or remove a part that the user did not name.
 - Show a mockup before you build a new screen.
 - Make design options different in structure, not only in color. `--variants`
-- Write each correction from the user into the project's rules file.

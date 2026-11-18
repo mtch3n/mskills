@@ -4,7 +4,7 @@ import re
 import subprocess
 
 HERE = pathlib.Path(__file__).resolve().parent
-ALLOWED = re.compile(r"^(site/[\w-]+\.css|site/billing\.html|DESIGN\.md)$")
+ALLOWED = re.compile(r"^(site/[\w-]+\.css|site/billing\.html)$")
 INVOICES = ["INV-2026-000184-NORTHWIND-EU", "INV-2026-000163-NORTHWIND-EU", "INV-2026-000141-NORTHWIND-EU"]
 KEEP = ["Starter", "Team", "Business", "$0", "$79", "Download PDF", "Send again", "Void invoice", *INVOICES]
 
@@ -49,8 +49,8 @@ def grade(run):
     grades.append(check("fixed:date-contrast", desk["dueContrast"] and not low, 1, str(low[:3])))
 
     text = desk["pageText"]
-    slop = [w for w in ("🚀", "Supercharge", "seamless", "effortless") if w.lower() in text.lower()]
-    grades.append(check("fixed:lead-copy", not slop, 1, ", ".join(slop)))
+    grades.append(check("scope:lead-copy-kept", "supercharge your billing" in text.lower(), 1))
+    grades.append(check("report:lead-copy-listed", "supercharge" in run.final.lower(), 1))
 
     source = (workdir / "site" / "billing.html").read_text(errors="replace") if (workdir / "site" / "billing.html").is_file() else ""
     menu_items = ["Download PDF", "Send again", "Void invoice"]

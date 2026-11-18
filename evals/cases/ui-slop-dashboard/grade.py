@@ -10,7 +10,7 @@ HERE = pathlib.Path(__file__).resolve().parent
 SCRIPTS = HERE.parents[2] / "skills" / "ui-antislop" / "scripts"
 PAGES = ["dashboard", "invoices", "settings"]
 WIDTHS = [390, 1280]
-ALLOWED = re.compile(r"^(site/[\w-]+\.(css|html)|DESIGN\.md)$")
+ALLOWED = re.compile(r"^(site/[\w-]+\.(css|html))$")
 SLOP = {"gradient", "accent-stripe", "icon-tile", "eyebrow", "card-grid", "tinted-box"}
 RAW = {"raw-colour", "palette-class", "arbitrary-size", "inline-style"}
 NUMBERS = [r"Revenue this month\s*\$12,400|\$12,400\s*Revenue this month", r"Open invoices\s*38\b|\b38\s*Open invoices", r"Overdue\s*4\b|\b4\s*Overdue"]
@@ -85,7 +85,8 @@ def grade(run):
     grades.append(check("fixed:dashboard-slop", not remaining, 2, ", ".join(remaining)))
 
     dashboard = text_of(workdir / "site" / "dashboard.html")
-    grades.append(check("rule:helper-removed", "quick look at how your business" not in dashboard, 1))
+    grades.append(check("scope:helper-kept", "quick look at how your business" in dashboard, 1))
+    grades.append(check("report:helper-listed", "quick look" in run.final.lower(), 1))
     missing = [pattern.split("\\s")[0] for pattern in NUMBERS if not re.search(pattern, dashboard)]
     grades.append(check("scope:numbers-kept", not missing, 2, ", ".join(missing)))
 
@@ -109,9 +110,6 @@ def grade(run):
         new += [f"{key[0]}@{key[1]}: {kind}" for kind in extra]
     grades.append(check("no-new-problems", not new, 1, "; ".join(new)))
 
-    rules = lines.get("DESIGN.md", [])
-    recorded = any(re.search(r"icon|gradient|stripe|tile|eyebrow|decorat|label above|ai[- ]generated|slop", line, re.I) for line in rules)
-    grades.append(check("rule:recorded", recorded, 1, " | ".join(rules)[:300]))
 
     grades.append({"name": "metrics", "passed": True, "weight": 0, "metrics": {
         "findings_before": sum(len(r["findings"]) for r in before.values()),

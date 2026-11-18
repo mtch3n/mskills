@@ -11,27 +11,24 @@ UI = STYLE | MARKUP
 TOKEN_FILE = re.compile(r"(token|theme|tailwind\.config|variables)", re.I)
 CUSTOM_PROPERTY = re.compile(r"--[\w-]+\s*:[^;]*;?")
 HUES = "red|orange|amber|yellow|lime|green|emerald|teal|cyan|sky|blue|indigo|violet|purple|fuchsia|pink|rose|slate|gray|grey|zinc|neutral|stone"
-COMMENT = re.compile(r"^\s*(?://|/\*|\*|\{/\*|<!--)")
+COMMENT = re.compile(r"^\s*(?://|/\*|\*(?!\s*[{,:>+~\[.])|\{/\*|<!--)")
 VENDOR = re.compile(r"(?:^|/)(?:node_modules|dist|build|\.next|components/ui)/")
-ALLOW = re.compile(r"slop-lint allow ([\w-]+):[ \t]*(\S[^\n]*)")
 CLASS_ATTR = re.compile(r"""class(?:Name)?\s*=\s*(?:\{\s*)?["'`]([^"'`]*)["'`]""")
 
 RULES = [
-    ("raw-colour", UI, re.compile(r"(?<![\w&/])#(?:[0-9a-fA-F]{8}|[0-9a-fA-F]{6}|[0-9a-fA-F]{3,4})\b(?![\w-])|\b(?:rgba?|hsla?|oklch|oklab|lab|lch)\((?![^)]*var\()"), "raw colour value; use a colour token"),
+    ("raw-colour", UI, re.compile(r"(?<![\w&/])#(?:[0-9a-fA-F]{8}|[0-9a-fA-F]{6}|[0-9a-fA-F]{3})\b(?![\w-])|\b(?:rgba?|hsla?|oklch|oklab|lab|lch)\((?![^)]*var\()"), "raw colour value; use a colour token"),
     ("palette-class", MARKUP, re.compile(rf"\b(?:bg|text|border|ring|fill|stroke|from|via|to|outline|divide|decoration|accent|caret|placeholder)-(?:{HUES})-\d{{2,3}}\b"), "palette colour class; use a token class"),
     ("arbitrary-size", MARKUP, re.compile(r"(?<![\w-])-?(?:[pm][xytrblse]?|gap(?:-[xy])?|space-[xy]|text|leading|tracking|rounded(?:-[a-z]{1,2})?)-\[-?\d*\.?\d+(?:px|rem|em)\]"), "arbitrary size; use the spacing or type scale"),
     ("inline-style", MARKUP, re.compile(r"""style\s*=\s*(?:\{\{[^}]*|"[^"]*)\b\d+(?:px|rem)"""), "inline size; use a class or token"),
     ("gradient", UI, re.compile(r"\b(?:linear|radial|conic)-gradient\(|\bbg-gradient-to-|\bbg-(?:linear|radial|conic)-"), "gradient"),
     ("gradient-text", UI, re.compile(r"background-clip\s*:\s*text|\bbg-clip-text\b"), "gradient text"),
     ("glass", UI, re.compile(r"backdrop-filter\s*:\s*blur|\bbackdrop-blur"), "blurred see-through surface"),
-    ("glow", UI, re.compile(rf"box-shadow\s*:\s*0(?:px)?\s+0(?:px)?\s+(?:[1-9]\d+)px|\bshadow-(?:{HUES})-\d|\bshadow-\[0_0_\d"), "glow shadow"),
-    ("accent-stripe", UI, re.compile(r"\bborder-[lrse]-(?:2|4|8|\[\d+px\])\b|border-(?:left|right|inline-start|inline-end)(?:-width)?\s*:\s*[2-9]px"), "coloured stripe on one side"),
+    ("glow", UI, re.compile(rf"box-shadow\s*:\s*0(?:px)?\s+0(?:px)?\s+(?:[1-9]\d+)px(?![^;]*(?:rgba?\(\s*0\s*,\s*0\s*,\s*0\b|#000\b|black))|\bshadow-(?:{HUES})-\d|\bshadow-\[0_0_\d"), "glow shadow"),
+    ("accent-stripe", UI, re.compile(r"^(?!.*(?:border-border|var\(--border\))).*?(?:\bborder-[lrse]-(?:2|4|8|\[\d+px\])\b|border-(?:left|right|inline-start|inline-end)(?:-width)?\s*:\s*[2-9]px)"), "coloured stripe on one side"),
     ("purple", UI, re.compile(r"\b[a-z]+-(?:indigo|violet|purple)-\d{2,3}\b|#(?:6366f1|4f46e5|8b5cf6|7c3aed|a855f7|9333ea|6d28d9)\b", re.I), "stock violet or indigo accent"),
-    ("emoji", MARKUP, re.compile("[\U0001F300-\U0001FAFF☀-⛿✀-➿]"), "emoji in UI text"),
-    ("native-tooltip", MARKUP, re.compile(r"<[a-z][\w-]*\b[^<>]*\stitle\s*="), "browser title tooltip; use the library tooltip"),
+    ("native-tooltip", MARKUP, re.compile(r"<(?!abbr\b|iframe\b|frame\b|link\b|style\b|meta\b|svg\b)[a-z][\w-]*\b[^<>]*\stitle\s*="), "browser title tooltip; use the library tooltip"),
     ("focus-removed", UI, re.compile(r"(?<![\w-])outline\s*:\s*(?:none|0)\b|(?<![\w:-])(?:focus:)?outline-none\b(?!.*\b(?:focus-visible:|focus:)(?:ring|outline|border|shadow))"), "focus outline removed with no other focus style; keep a visible :focus-visible style"),
-    ("motion", UI, re.compile(r"\banimate-(?:ping|bounce)\b|\bhover:(?:scale|-?translate-y)-|animation[\w-]*\s*:[^;]*\binfinite\b"), "motion that pulls attention; animate only a change of state"),
-    ("stock-copy", MARKUP, re.compile(r"\b(?:seamless(?:ly)?|supercharge|effortless(?:ly)?|empower|game-?chang\w*|cutting-edge|next-level|revolutioni[sz]e|world-class|unleash|skyrocket|best-in-class|all-in-one|blazing(?:ly)? fast|level up)\b", re.I), "marketing word"),
+    ("motion", UI, re.compile(r"\banimate-(?:ping|bounce)\b|\bhover:(?:scale|-?translate-y)-"), "motion that pulls attention; animate only a change of state"),
 ]
 
 
@@ -206,24 +203,14 @@ def data_table(path):
     return []
 
 
-def allowed(root):
-    rules = root / "DESIGN.md"
-    if not rules.is_file():
-        return {}
-    return dict(ALLOW.findall(rules.read_text(errors="replace")))
-
-
 def main(argv):
     cwd = pathlib.Path.cwd()
     root = pathlib.Path(git(cwd, "rev-parse", "--show-toplevel").strip() or cwd)
     lines = file_lines(argv) if argv else changed_lines(root)
-    allow = allowed(root)
-    results = [r for r in lint(lines) if r[2] not in allow]
+    results = lint(lines)
     for path, number, kind, message, text in results:
         shown = path.relative_to(cwd) if path.is_relative_to(cwd) else path
         print(f"{shown}:{number}: {kind}: {message} | {text[:120]}")
-    for kind, reason in allow.items():
-        print(f"allowed by DESIGN.md: {kind}: {reason.strip()}")
     print(f"{len(results)} finding(s) in {len(lines)} file(s)")
     return 1 if results else 0
 

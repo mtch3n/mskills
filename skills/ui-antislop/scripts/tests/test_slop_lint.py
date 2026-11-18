@@ -48,7 +48,7 @@ class SlopLintTest(unittest.TestCase):
         self.assertEqual(result.returncode, 1)
         expected = {
             "accent-stripe": [3], "gradient": [3], "purple": [3, 7], "palette-class": [3], "arbitrary-size": [3], "glass": [3],
-            "eyebrow": [4], "stock-copy": [5], "emoji": [5], "native-tooltip": [6], "raw-colour": [7], "inline-style": [7],
+            "eyebrow": [4], "native-tooltip": [6], "raw-colour": [7], "inline-style": [7],
         }
         self.assertEqual(found, expected)
 
@@ -71,15 +71,7 @@ class SlopLintTest(unittest.TestCase):
         (self.dir / "Live.tsx").write_text('<span className="animate-ping">new</span>\n<div className="hover:scale-105">card</div>\n<div className="animate-pulse h-4" />\n')
         (self.dir / "spin.css").write_text(".badge { animation: glow 2s ease infinite; }\n.fade { animation: fade 200ms ease-out; }\n")
         _, found = run(self.dir, "Live.tsx", "spin.css")
-        self.assertEqual(found.get("motion"), [1, 2, 1])
-
-    def test_design_rules_can_allow_a_kind_with_a_reason(self):
-        (self.dir / "DESIGN.md").write_text("# Rules\n\nslop-lint allow gradient: the brand hero uses the logo gradient\n")
-        subprocess.run(["git", "init", "-q"], cwd=self.dir, check=True)
-        result, found = run(self.dir, "app.css")
-        self.assertNotIn("gradient", found)
-        self.assertIn("gradient-text", found)
-        self.assertIn("allowed by DESIGN.md: gradient: the brand hero uses the logo gradient", result.stdout)
+        self.assertEqual(found.get("motion"), [1, 2])
 
     def test_clean_file_passes(self):
         (self.dir / "Clean.tsx").write_text('<button className="bg-primary px-4 text-sm">Save</button>\n')

@@ -31,8 +31,6 @@ plugin that ships them with a hook.
 | [`worktree-guard.py`](hooks/worktree-guard.py) | `PreToolUse` on `Bash` | Denies `git worktree add` and `git worktree move` to any path other than `<main-repo>/.claude/worktrees/<name>`. How it works: [`docs/worktree-guard.md`](docs/worktree-guard.md). Needs `git`. |
 | [`agent-model.py`](hooks/agent-model.py) | `PreToolUse` on `Agent` | Denies a subagent call that does not set `model`, and tells the agent which model fits the job. A fork is allowed. |
 | [`finish-guard.py`](hooks/finish-guard.py) | `Stop` | When the reply ends by asking the user about work that best practice can decide, blocks the stop one time. The agent then continues, or removes the offer if the task is finished. A question about an outward or destructive action, such as push, merge, deploy, send or delete, is allowed. |
-| [`ui-correction.py`](hooks/ui-correction.py) | `UserPromptSubmit` | When the user's message corrects a UI, tells the agent to write the rule in the rules file and to measure before and after. |
-| [`ui-baseline.py`](hooks/ui-baseline.py) | `UserPromptSubmit` | When the user asks for an open task on a page, such as "polish the Team page", measures the page before the work. Gives the agent the problems that are already there, with the CSS rule of each, and tells it that the list is not complete. |
 | [`ui-lint.py`](hooks/ui-lint.py) | `PostToolUse` on edits | Runs `slop-lint` on the lines that the agent just wrote to a UI file and gives it the findings. |
 
 All hooks need `python3`.

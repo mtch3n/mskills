@@ -3,7 +3,7 @@ import re
 
 HERE = pathlib.Path(__file__).resolve().parent
 UI_FILES = sorted(p.name for p in (HERE / "fixture" / "components" / "ui").iterdir())
-ALLOWED = re.compile(r"^(app/.+\.(tsx?|css)|components/(?!ui/).+\.tsx?|components/ui/(?!(" + "|".join(re.escape(n) for n in UI_FILES) + r")$)[\w-]+\.tsx|DESIGN\.md|package\.json|pnpm-lock\.yaml)$")
+ALLOWED = re.compile(r"^(app/.+\.(tsx?|css)|components/(?!ui/).+\.tsx?|components/ui/(?!(" + "|".join(re.escape(n) for n in UI_FILES) + r")$)[\w-]+\.tsx|package\.json|pnpm-lock\.yaml)$")
 OFF_PALETTE = re.compile(r"\b(?:bg|text|border|ring|fill|stroke)-(?:teal|emerald|green|cyan|sky|blue|indigo|violet|purple)-\d+|#[0-9a-fA-F]{3,8}\b")
 KEEP = ["Quarterly revenue", "Refunds by region", "Churn by plan", "Annual tax summary", "Reports", "Export", "Last 7 days", "Last 30 days", "Last 90 days", "No reports in this range", "report.owner", "report.status", "rows.length"]
 
