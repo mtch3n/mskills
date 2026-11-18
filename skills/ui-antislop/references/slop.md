@@ -18,6 +18,8 @@ it.
 - Do not make a row of identical cards, each with an icon, a heading and a sentence.
   `card-grid`
 - Do not add separators between items that space already separates.
+- Make an inner box less round than the box around it: the inner radius is the outer
+  radius minus the gap. `nested-radius`
 
 ## Color
 
@@ -39,6 +41,13 @@ it.
   sentence about cost or access. `subtitles`, `helper-text`
 - Do not add a legend if an icon and a label already tell the same thing.
 - Do not use emoji in UI text. `emoji`
+- Do not use "!" or a greeting such as "Welcome back" in a heading, a label or a
+  button. Name the page or the period. `shouting`
+- Do not set a heading at weight 800 or 900. Use size and color for the hierarchy.
+  `heavy-heading`
+- Do not set small text with negative letter spacing. `tight-text`
+- Do not make an element pulse, bounce, grow on hover or move without end. Animate
+  only a change of state. `motion`
 - Do not use marketing words, for example "seamless", "unlock" or "elevate".
   `stock-copy`
 - Do not add hints, "demo data" banners, "updated just now" or success text that

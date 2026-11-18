@@ -219,6 +219,19 @@ class ConsistencyTest(Browser):
         self.assertNotIn("card-actions", kinds(same))
         self.assertNotIn("inconsistent", kinds(same))
 
+    def test_heavy_heading_shouting_and_tight_text(self):
+        report = self.measure_html("<h1 style='font-weight:900'>Welcome back, Sam!</h1><button>Save!</button><p style='font-size:12px;letter-spacing:-0.5px'>Last saved at 10:41</p>")
+        self.assertTrue({"heavy-heading", "shouting"} <= smells(report), report["smells"])
+        self.assertIn("tight-text", kinds(report))
+        calm = self.measure_html("<h1 style='font-weight:600'>Invoices</h1><button>Save</button><p style='font-size:12px'>Last saved at 10:41</p><h2 style='font-size:40px;letter-spacing:-1px'>Plans</h2>")
+        self.assertFalse({"heavy-heading", "shouting"} & smells(calm), calm["smells"])
+        self.assertNotIn("tight-text", kinds(calm))
+
+    def test_inner_box_rounder_than_the_outer_box(self):
+        box = "<div style='border:1px solid #ccc;border-radius:{o}px;padding:8px;width:300px'><div style='border:1px solid #ccc;border-radius:{i}px;height:80px'>x</div></div>"
+        self.assertIn("nested-radius", kinds(self.measure_html(box.format(o=8, i=16))))
+        self.assertNotIn("nested-radius", kinds(self.measure_html(box.format(o=16, i=8))))
+
     def test_too_many_font_sizes(self):
         html = "".join(f"<p style='font-size:{s}px'>t</p>" for s in [11, 12, 13, 14, 15, 16, 18, 20])
         self.assertIn("scale", kinds(self.measure_html(html)))

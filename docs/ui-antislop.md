@@ -110,8 +110,7 @@ design-taste-frontend. We read both on 2026-10-31.
 - Neither measures the edges of siblings, gaps, table columns, icon centers, clipped
   text, rows of chips, the differences between pages, or a baseline. `ui-antislop`
   does these.
-- Neither records the user's corrections, and neither stops the agent when it did not
-  measure.
+- Neither records the user's corrections.
 
 Some of their rules disagree. impeccable keeps card radii at 12 to 16 px and permits
 a soft shadow. design-taste-frontend calls one 12 to 16 px radius on everything a
@@ -119,6 +118,23 @@ tell, fails resting shadows and thin borders, and fails a page with little motio
 These rules are for marketing pages. On an app screen they conflict with the borders
 and the quiet surfaces that the app needs. Thus the project's `DESIGN.md` wins, and
 an app screen does not get the marketing rules.
+
+On 2026-11-17 we read a third skill, unslop. It is a prompt only: the model reads
+the page and fixes it in nine passes. It has no measurement and no hook. We took
+three ideas from it and wrote them again in our words:
+
+- After the first run, decide how much to change. A page that is mostly correct gets
+  only its findings fixed. A correct page does not change.
+- New checks: a heading at weight 800 or more (`heavy-heading`), "!" or a greeting
+  in a heading, a label or a button (`shouting`), small text with negative letter
+  spacing (`tight-text`), an inner box that is rounder than the box around it
+  (`nested-radius`), and motion that pulls attention (`motion`, lint only).
+- Measure a small number of times. The skill already says one run before and one
+  run after all fixes.
+
+We did not take its rules about a brand direction, a tinted palette and a default
+icon set. On an app screen, the user wants the shadcn defaults and the icon set of
+the project.
 
 ## Detail defects
 
@@ -222,6 +238,19 @@ We tuned these rules on the shadcn example pages (dashboard, tasks, authenticati
 After these changes, these pages give no fail. The warnings that stay are real, for
 example trend icons that are 2 px above the center of their label, and sortable table
 headers that are 2 px to the left of their cells.
+
+The hooks also avoid noise. In the real sessions of 4 to 17 November we found these
+false starts, and fixed them:
+
+- The ostia bus messages, the briefs from other agents and the pasted text started
+  the correction hook and the baseline hook. The hooks now read only the words that
+  the user typed.
+- The correction hook started on words such as "too many fields" and "not useful",
+  which were not about a UI. It now needs a word for a visible defect.
+- In a folder that is not a git repository, for example the home folder, the
+  baseline read every HTML file under the folder, also the Rust documentation. The
+  lint after an edit also ran on reports and scratch files outside a project. Both
+  hooks now run only inside a git repository.
 
 ## Limits
 

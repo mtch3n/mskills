@@ -41,6 +41,8 @@ PROPERTIES = {
     "overflow-x": ["width", "min-width", "white-space"],
     "control-font": ["font", "font-family", "font-size"],
     "proximity": ["margin", "margin-top", "margin-bottom"],
+    "tight-text": ["letter-spacing"],
+    "nested-radius": ["border-radius"],
 }
 
 

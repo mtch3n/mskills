@@ -860,6 +860,21 @@
   smell("accent-stripe", (k) => `${k} box(es) with a coloured stripe on one side`, visible.filter((n) => n.box && !n.control && !CELLS.has(n.tag) && stripe(n)));
   smell("pills", (k) => `${k} decorative pill/badge label(s)`, visible.filter((n) => pillShaped(n) && !n.control && !inCell(n) && !n.el.closest("button,a,[role=button],[role=tab]")));
   const headings = visible.filter((n) => n.text && (/^H[1-3]$/.test(n.tag) || (px(n.cs.fontSize) >= 24 && Number(n.cs.fontWeight) >= 600)));
+  smell("heavy-heading", (k) => `${k} heading(s) at weight 800 or more`, headings.filter((n) => Number(n.cs.fontWeight) >= 800));
+  const shortText = (n) => n.own && n.words <= 12 && (headings.includes(n) || n.control || insideControl(n) || /^(LABEL|LEGEND|TH|SUMMARY)$/.test(n.tag));
+  smell("shouting", (k) => `${k} heading(s), label(s) or button(s) with "!" or a greeting`, visible.filter((n) => shortText(n) && (/!\s*\S{0,3}\s*$/.test(n.own) || /^(?:welcome back|hi|hey|hello)\b/i.test(n.own.trim()))));
+  const tracked = visible.filter((n) => n.own && px(n.cs.fontSize) < 16 && px(n.cs.letterSpacing) < 0);
+  if (tracked.length) add("warn", "tight-text", `${tracked.length} small text(s) with negative letter spacing, e.g. ${tracked[0].cs.letterSpacing} at ${tracked[0].cs.fontSize}`, tracked.slice(0, 4), tracked.slice(0, 4).map((n) => n.text));
+  const rounder = [];
+  for (const n of visible) {
+    if (!card(n) || n.parent < 0) continue;
+    let p = nodes[n.parent];
+    while (p && !card(p)) p = p.parent >= 0 ? nodes[p.parent] : null;
+    if (!p) continue;
+    const dx = n.b.x1 - p.b.x1, dy = n.b.y1 - p.b.y1, outer = px(p.cs.borderTopLeftRadius), inner = px(n.cs.borderTopLeftRadius);
+    if (dx >= 0 && dy >= 0 && dx <= 16 && dy <= 16 && outer > 0 && inner > outer + 0.5) rounder.push([n, p, inner, outer]);
+  }
+  if (rounder.length) add("warn", "nested-radius", `${rounder.length} inner box(es) rounder than the box around them, e.g. ${rounder[0][2]}px inside ${rounder[0][3]}px; the inner radius is the outer radius minus the gap`, rounder.slice(0, 4).map((r) => r[0]), rounder.slice(0, 4).map((r) => r[0].b));
   smell("eyebrow", (k) => `${k} small upper-case label(s) above a heading`, visible.filter((n) => {
     if (!n.text || px(n.cs.fontSize) > 14 || headings.includes(n)) return false;
     const caps = n.cs.textTransform === "uppercase" || (n.own.length >= 3 && n.own === n.own.toUpperCase() && /[A-Z]/.test(n.own));

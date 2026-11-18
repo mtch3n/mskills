@@ -38,7 +38,17 @@ uv run --script <base>/scripts/ui-antislop.py <page> [<page> ...] --stress --int
 
 The kinds, the options and the hooks are in `references/kinds.md`.
 
-## 3. Read the result
+## 3. Decide how much to change
+
+After the first run, compare the findings with the task.
+
+- Many fails and smells in color, type, icons and words: fix all of them in one pass.
+- A few findings on a page that is mostly correct: fix only these. Keep the palette,
+  the type and the layout.
+- No fail and no smell: tell the user that the page is correct. Do not change a
+  correct page only to make it different.
+
+## 4. Read the result
 
 - `F`: a defect. Fix it. Do not report the work as done while an `F` stays.
 - `W`: fix it, or tell the user why the project's rules allow it.
@@ -49,7 +59,7 @@ The kinds, the options and the hooks are in `references/kinds.md`.
 - Fix the cause in the shared style when the same problem is on several pages.
 - Do not remove content to make a check pass.
 
-## 4. When the user complains
+## 5. When the user complains
 
 1. Write the complaint as a rule in the rules file. Use the user's words.
 2. Find every instance of the problem on every page, not only the one that the user
@@ -57,7 +67,7 @@ The kinds, the options and the hooks are in `references/kinds.md`.
 3. Change only what the user named. Measure with `--out <dir>/before` first, and with
    `--baseline <dir>/before` after. Undo each change that is not part of the task.
 
-## 5. Report
+## 6. Report
 
 Tell the pages and widths that you measured, the number of fails, warns and smells
 before and after, and each warn or smell that you kept with the reason.

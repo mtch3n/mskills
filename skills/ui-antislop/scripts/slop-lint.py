@@ -30,6 +30,7 @@ RULES = [
     ("emoji", MARKUP, re.compile("[\U0001F300-\U0001FAFF☀-⛿✀-➿]"), "emoji in UI text"),
     ("native-tooltip", MARKUP, re.compile(r"<[a-z][\w-]*\b[^<>]*\stitle\s*="), "browser title tooltip; use the library tooltip"),
     ("focus-removed", UI, re.compile(r"(?<![\w-])outline\s*:\s*(?:none|0)\b|(?<![\w:-])(?:focus:)?outline-none\b(?!.*\b(?:focus-visible:|focus:)(?:ring|outline|border|shadow))"), "focus outline removed with no other focus style; keep a visible :focus-visible style"),
+    ("motion", UI, re.compile(r"\banimate-(?:ping|bounce)\b|\bhover:(?:scale|-?translate-y)-|animation[\w-]*\s*:[^;]*\binfinite\b"), "motion that pulls attention; animate only a change of state"),
     ("stock-copy", MARKUP, re.compile(r"\b(?:seamless(?:ly)?|supercharge|effortless(?:ly)?|empower|game-?chang\w*|cutting-edge|next-level|revolutioni[sz]e|world-class|unleash|skyrocket|best-in-class|all-in-one|blazing(?:ly)? fast|level up)\b", re.I), "marketing word"),
 ]
 

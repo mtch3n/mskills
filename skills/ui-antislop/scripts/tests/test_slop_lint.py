@@ -67,6 +67,12 @@ class SlopLintTest(unittest.TestCase):
         self.assertEqual(found, {"raw-colour": [6], "palette-class": [1]})
         self.assertIn("2 finding(s) in 2 file(s)", result.stdout)
 
+    def test_motion_that_pulls_attention(self):
+        (self.dir / "Live.tsx").write_text('<span className="animate-ping">new</span>\n<div className="hover:scale-105">card</div>\n<div className="animate-pulse h-4" />\n')
+        (self.dir / "spin.css").write_text(".badge { animation: glow 2s ease infinite; }\n.fade { animation: fade 200ms ease-out; }\n")
+        _, found = run(self.dir, "Live.tsx", "spin.css")
+        self.assertEqual(found.get("motion"), [1, 2, 1])
+
     def test_design_rules_can_allow_a_kind_with_a_reason(self):
         (self.dir / "DESIGN.md").write_text("# Rules\n\nslop-lint allow gradient: the brand hero uses the logo gradient\n")
         subprocess.run(["git", "init", "-q"], cwd=self.dir, check=True)

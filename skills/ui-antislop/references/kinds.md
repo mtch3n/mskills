@@ -8,13 +8,13 @@
 | `F` fail | `broken-image`, `image-distorted`, `contrast` below the WCAG AA ratio | Fix it. |
 | `F` fail | From `--interact`: `focus-invisible`, `focus-clipped`, `focus-covered`, `popup-clipped`, `popup-covered`, `dialog-unreachable` | Fix it. |
 | `W` layout | `edge`, `gap`, `row-height`, `row-top`, `row-bottom`, `row-centre`, `icon-centre`, `baseline`, `off-centre`, `sticks-out`, `proximity`, `choice-centre`, `orphan-wrap` | Fix it, or write in the report why it is correct. A gap of 1 to 4 px is almost never correct. |
-| `W` components | `inconsistent`, `card-actions`, `scale`, `drift`, `off-token`, `double-border`, `cramped-padding`, `control-font`, `target-size` | Fix it, or give the reason. |
-| `W` text | `line-length`, `small-text`, `headings`, `truncated`, `early-ellipsis`, `long-label` | Fix it, or give the reason. |
+| `W` components | `inconsistent`, `card-actions`, `nested-radius`, `scale`, `drift`, `off-token`, `double-border`, `cramped-padding`, `control-font`, `target-size` | Fix it, or give the reason. |
+| `W` text | `line-length`, `small-text`, `tight-text`, `headings`, `truncated`, `early-ellipsis`, `long-label` | Fix it, or give the reason. |
 | `W` words | `restates`, `chatty`, `text-heavy`, `wall-of-text`, `long-paragraph` | Remove the text. Do not write it again in other words. |
 | `W` tables | `table-column`, `numeric-align`, `empty-cell`, `long-table` | Fix it, or give the reason. |
 | `W` cursor | `cursor-lie`, `cursor-mixed` | Fix it, or give the reason. |
 | `W` motion | From `--interact`: `focus-shift`, `hover-shift` | Fix it, or give the reason. |
-| `S` smell | `card-in-card`, `tinted-box`, `accent-stripe`, `eyebrow`, `subtitles`, `pills`, `border-shadow`, `icon-tile`, `card-grid`, `helper-text` | Compare it with the rules. Remove it if no rule asks for it. |
+| `S` smell | `card-in-card`, `tinted-box`, `accent-stripe`, `eyebrow`, `subtitles`, `pills`, `border-shadow`, `icon-tile`, `card-grid`, `helper-text`, `heavy-heading`, `shouting` | Compare it with the rules. Remove it if no rule asks for it. |
 | `S` smell | `gradient`, `gradient-text`, `glow`, `glass`, `purple`, `emoji`, `hues`, `icon-sets`, `native-tooltip`, `stock-copy`, `filler`, `cursor-zoo` | Compare it with the rules. Remove it if no rule asks for it. |
 
 
