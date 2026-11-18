@@ -23,6 +23,8 @@ def main():
     path = data.get("file_path") or ""
     if not path.endswith(UI) or not pathlib.Path(path).is_file():
         return 0
+    if subprocess.run(["git", "-C", str(pathlib.Path(path).parent), "rev-parse"], capture_output=True).returncode != 0:
+        return 0
     lines = {line[:120] for line in written(data)}
     if not lines:
         return 0

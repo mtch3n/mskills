@@ -1,11 +1,17 @@
 #!/usr/bin/env python3
+import importlib.util
 import json
+import pathlib
 import re
 import sys
 
+spec = importlib.util.spec_from_file_location("user_prompt", pathlib.Path(__file__).with_name("user_prompt.py"))
+user_prompt = importlib.util.module_from_spec(spec)
+spec.loader.exec_module(user_prompt)
+
 CORRECTION = re.compile(
     r"\b(ugly|messy|weird[- ]looking|looks? (?:bad|off|wrong|weird|cheap|generic|ugly)|(?:don'?t|doesn'?t|do not|does not) (?:line up|align|fit)|not (?:aligned|centered|centred|consistent)|misaligned|inconsistent|"
-    r"too (?:big|small|much|many|wide|narrow|tight|close|far|rounded|crowded)|ai slop|slop|uneven|cut off|overlap\w*|can'?t see|not visible|squished|cramped|off[- ]cent(?:er|re)|\d+ ?px off)",
+    r"too (?:big|small|wide|narrow|tight|close|far|rounded|crowded|cramped|bright|dark|light)|too (?:much|little) (?:padding|space|spacing|margin|white ?space|gap)|too many (?:colou?rs|fonts|borders|icons|cards|lines|sizes|shadows)|ai slop|slop|uneven|cut off|overlap\w*|can'?t see|not visible|squished|cramped|off[- ]cent(?:er|re)|\d+ ?px off)",
     re.I,
 )
 UI = re.compile(
@@ -13,7 +19,7 @@ UI = re.compile(
     r"padding|margin|spacing|gap|align\w*|border|radius|shadow|gradient|pixel|\d+px|mobile|responsive|tooltip|chips?|menu|text ?box)\b",
     re.I,
 )
-COPY = re.compile(r"\b(too verbose|verbose|wordy|chatty|not useful|filler|remove (?:this|the|that) (?:text|sentence|line|subtitle|description|hint)|too (?:much|many) (?:text|words)|less text|like a text ?book)\b", re.I)
+COPY = re.compile(r"\b(too verbose|verbose|wordy|chatty|filler|remove (?:this|the|that) (?:text|sentence|line|subtitle|description|hint)|too (?:much|many) (?:text|words)|less text|like a text ?book)\b", re.I)
 CONTEXT = (
     "The user corrects a UI result. Do these steps before you change code:\n"
     "1. Write the correction as a rule in the project's design rules file (DESIGN.md, or the UI section of CLAUDE.md or AGENTS.md). "
@@ -29,7 +35,6 @@ COPY_CONTEXT = (
 )
 
 
-NOT_USER = re.compile(r"<agent-message\b|<task-notification>|\[Subagent hand-back\]|^Another Claude session sent a message|^The \w+ plugin sent a message")
 
 
 def main():
@@ -37,11 +42,11 @@ def main():
         payload = json.load(sys.stdin)
     except (json.JSONDecodeError, ValueError):
         return 0
-    prompt = payload.get("prompt") or ""
-    if NOT_USER.search(prompt):
+    prompt = user_prompt.own_words(payload.get("prompt") or "")
+    if not UI.search(prompt):
         return 0
     copy = bool(COPY.search(prompt))
-    if not (copy or (CORRECTION.search(prompt) and UI.search(prompt))):
+    if not (copy or CORRECTION.search(prompt)):
         return 0
     context = CONTEXT + (COPY_CONTEXT if copy else "")
     json.dump({"hookSpecificOutput": {"hookEventName": "UserPromptSubmit", "additionalContext": context}}, sys.stdout)

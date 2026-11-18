@@ -9,8 +9,11 @@ import tempfile
 
 OPEN = re.compile(r"\b(?:polish|clean ?up|tidy|ship|launch|release|review|audit|ai[- ]?slop|slop|looks? (?:off|bad|wrong|cheap|generic|ugly|weird)|make it (?:look|feel)|improve the (?:ui|design|look|page|screen)|qa)\b", re.I)
 UI = re.compile(r"\b(?:page|screen|ui|ux|design|layout|view|dashboard|site|website|form|table|modal|dialog|component)s?\b", re.I)
-NOT_USER = re.compile(r"<agent-message\b|<task-notification>|\[Subagent hand-back\]|^Another Claude session sent a message|^The \w+ plugin sent a message")
 LIMIT = 4
+
+spec = importlib.util.spec_from_file_location("user_prompt", pathlib.Path(__file__).with_name("user_prompt.py"))
+user_prompt = importlib.util.module_from_spec(spec)
+spec.loader.exec_module(user_prompt)
 
 spec = importlib.util.spec_from_file_location("ui_measure", pathlib.Path(__file__).with_name("ui_measure.py"))
 ui = importlib.util.module_from_spec(spec)
@@ -36,9 +39,7 @@ def main():
         payload = json.load(sys.stdin)
     except (json.JSONDecodeError, ValueError):
         return 0
-    prompt = payload.get("prompt") or ""
-    if NOT_USER.search(prompt):
-        return 0
+    prompt = user_prompt.own_words(payload.get("prompt") or "")
     state = pathlib.Path(tempfile.gettempdir()) / f"ui-baseline-{payload.get('session_id') or 'session'}.json"
     state.unlink(missing_ok=True)
     if not (OPEN.search(prompt) and UI.search(prompt)):

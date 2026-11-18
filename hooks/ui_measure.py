@@ -36,8 +36,7 @@ def listed_pages(root):
 
 def html_files(root):
     tracked = subprocess.run(["git", "-C", str(root), "ls-files", "--cached", "--others", "--exclude-standard", "*.html", "*.htm"], capture_output=True, text=True)
-    names = tracked.stdout.split() if tracked.returncode == 0 else [str(f.relative_to(root)) for f in root.rglob("*.htm*") if "node_modules" not in f.parts]
-    return [root / name for name in names[:300]]
+    return [root / name for name in tracked.stdout.split()[:300]] if tracked.returncode == 0 else []
 
 
 def label(page):

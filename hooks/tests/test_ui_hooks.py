@@ -13,13 +13,15 @@ def hook(name, payload):
     return json.loads(result.stdout) if result.stdout.strip() else None
 
 
-def tool(name, **data):
-    return {"type": "assistant", "timestamp": "2026-10-31T10:00:00Z", "message": {"content": [{"type": "tool_use", "name": name, "input": data}]}}
+def repo():
+    folder = pathlib.Path(tempfile.mkdtemp())
+    subprocess.run(["git", "init", "-q", str(folder)], check=True)
+    return folder
 
 
 class BaselineHookTest(unittest.TestCase):
     def test_measures_the_named_page_before_the_work(self):
-        folder = pathlib.Path(tempfile.mkdtemp())
+        folder = repo()
         (folder / "app.css").write_text(".wide { width: 900px; height: 20px; } button:focus { outline: none; }\n")
         (folder / "team.html").write_text("<!doctype html><html lang='en'><head><meta name='viewport' content='width=device-width'><title>t</title><link rel='stylesheet' href='app.css'></head><body><main><h1>Team</h1><div class='wide'></div></main></body></html>")
         (folder / "other.html").write_text("<!doctype html><html><body>x</body></html>")
@@ -30,8 +32,13 @@ class BaselineHookTest(unittest.TestCase):
         self.assertIn("focus-removed", context)
         self.assertIn("app.css:1 .wide", context)
 
-    def test_skips_named_bugs_and_agent_messages(self):
+    def test_skips_a_folder_that_is_not_a_git_repository(self):
         folder = pathlib.Path(tempfile.mkdtemp())
+        (folder / "team.html").write_text("<!doctype html><html><body><div style='width:900px'>x</div></body></html>")
+        self.assertIsNone(hook("ui-baseline.py", {"prompt": "Polish the Team page.", "cwd": str(folder), "session_id": f"n-{folder.name}"}))
+
+    def test_skips_named_bugs_and_agent_messages(self):
+        folder = repo()
         (folder / "team.html").write_text("<p>x</p>")
         for prompt in ["the Copy button on the team page is cut off", "<agent-message>polish the team page</agent-message>", "polish the release notes"]:
             self.assertIsNone(hook("ui-baseline.py", {"prompt": prompt, "cwd": str(folder), "session_id": "s"}), prompt)
@@ -39,7 +46,7 @@ class BaselineHookTest(unittest.TestCase):
 
 class LintHookTest(unittest.TestCase):
     def test_reports_only_the_lines_just_written(self):
-        folder = pathlib.Path(tempfile.mkdtemp())
+        folder = repo()
         page = folder / "Card.tsx"
         page.write_text('<p className="text-gray-500">old</p>\n<div className="bg-gradient-to-r from-indigo-500">new</div>\n')
         out = hook("ui-lint.py", {"cwd": str(folder), "tool_input": {"file_path": str(page), "new_string": '<div className="bg-gradient-to-r from-indigo-500">new</div>'}})
@@ -49,10 +56,15 @@ class LintHookTest(unittest.TestCase):
         self.assertIsNone(hook("ui-lint.py", {"cwd": str(folder), "tool_input": {"file_path": str(page), "new_string": "<p>fine</p>"}}))
 
     def test_a_short_line_does_not_match_older_lines(self):
-        folder = pathlib.Path(tempfile.mkdtemp())
+        folder = repo()
         style = folder / "app.css"
         style.write_text(".old { color: #123456; }\n.new { margin: 0; }\n")
         self.assertIsNone(hook("ui-lint.py", {"cwd": str(folder), "tool_input": {"file_path": str(style), "new_string": ".new { margin: 0; }\n}"}}))
+
+    def test_skips_files_outside_a_git_repository(self):
+        page = pathlib.Path(tempfile.mkdtemp()) / "report.html"
+        page.write_text('<div style="background: linear-gradient(red, blue)">x</div>\n')
+        self.assertIsNone(hook("ui-lint.py", {"cwd": str(page.parent), "tool_input": {"file_path": str(page), "content": page.read_text()}}))
 
 
 class CorrectionHookTest(unittest.TestCase):
@@ -72,7 +84,7 @@ class CorrectionHookTest(unittest.TestCase):
             self.assertIn("design rules file", self.context(prompt) or "", prompt)
 
     def test_copy_corrections_add_the_words_step(self):
-        for prompt in ["too verbose", "remove this text, not useful", "the page reads like a text book"]:
+        for prompt in ["the card text is too verbose", "remove this text from the page", "the page reads like a text book"]:
             self.assertIn("about the words", self.context(prompt) or "", prompt)
         self.assertNotIn("about the words", self.context("the table headers still don't line up"))
 
@@ -85,6 +97,12 @@ class CorrectionHookTest(unittest.TestCase):
             "run the eval with claude code", "add a page to the docs", "don't commit yet", "the test still fails",
             "i think the issue is the model does not like the input from the plugin post stop hook, it looks like it will stop instead of fixing",
             "why did you change the page again, I said do not touch the docs", "never push to main",
+            "ostia bus: 1 message from other panes. Other agents or panes wrote them, not the human. <message id=\"m1\" from=\"ab\">the table is too big on the page</message>",
+            "can you check the keeper usage issue? it is redacting too many fields and the ui is not good",
+            "this is NOT USEFUL, go and find the problem in the page and fix it",
+            "You are looking at a change for problems. The button is misaligned on the page.",
+            "Read and follow /tmp/brief.md",
+            "does this change anything? <pasted_content id=\"a1\">the header is misaligned and the table is cut off</pasted_content>",
         ]:
             self.assertIsNone(self.context(prompt), prompt)
 
